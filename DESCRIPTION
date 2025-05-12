@@ -1,0 +1,20 @@
+Package: loopevd
+Title: Loop Functions for Extreme Value Distributions
+Version: 0.0.0.9000
+Authors@R: 
+    person("Julian", "O'Grady", , "julian.ogrady@csiro.au", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+License: file LICENSE
+Imports: terra, evd, ncdf4,stats,utils
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests:
+  knitr,
+  rmarkdown,
+  zoo,
+  ozmaps,
+  raster,
+  sp,
+  methods
+VignetteBuilder: knitr

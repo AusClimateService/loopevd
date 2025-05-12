@@ -1,0 +1,257 @@
+---
+title: "Introduction to loopevd"
+author: "Julian O'Grady"
+output: rmarkdown::html_vignette
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Introduction to loopevd}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Advances in spatial analysis of multidimensional [netCDF](https://en.wikipedia.org/wiki/NetCDF) datasets in R allows the improved processing as gridded climate datasets (e.g. temperature rainfall or wind speed) which include an extra dimension, such as time. This package reformat the output of the extreme value analysis functions in the [evd](https://cran.r-project.org/web/packages/evd/index.html) package for one location to be analysed with the function of the [terra](https://github.com/rspatial/terra) spatial package for many gridded locations. 
+
+
+```{r}
+library(loopevd)
+library(ncdf4)      
+library(terra)
+library(raster)
+library(sp)
+library(ozmaps)
+library(evd)
+library(zoo)
+
+```
+
+Colour palate for tempertrure a coast line of Australia for plotting can be defined by. 
+
+```{r}
+cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
+rwb = colorRampPalette(c("red","white","blue"))
+
+coastsp = methods::as(ozmaps::ozmap_data("country", quiet =TRUE),"Spatial")
+coastp = vect(ozmaps::ozmap_data("country", quiet =TRUE))
+coast = as.lines(coastp)
+coast.layer = list("sp.lines",methods::as(coast,"Spatial"),col="black")
+```
+
+NetCDF Climate datasets can be easily read in with terra. Below a aggregated 50km gridded dataset observations of annual max daily max temperature from the [AGCD](https://portal.ga.gov.au/metadata/australian-gridded-climate-data-agcd-v1/maximum-temperature-tmax-mean-daily/agcd-v1-tmax-mean-r005-daily-1928-bom/42bf866f-f135-474f-8b84-1d8e206f51c4) dataset is read in from netcdf file provided within this package. At each grid point, there is a single value (the annual max) for each year from 1980 to 2019. 
+
+
+```{r}
+r = terra::rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc"
+                            ,package = "loopevd"))
+#r = terra::rast("../inst/extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc")
+```
+
+Below a basic but rapid example of spatial gridded analysis using the `terra::app()` function rapidly loops through grid cells to apply the `base::sort()` function to extract the 2nd highest value of the 40 year dataset. The second highest value in a 40 year dataset is considered the empirical 20 year Average recurrence interval (ARI), having a 5% annual exceedence probability [(AEP)](https://tonyladson.wordpress.com/2017/07/04/converting-between-ey-aep-and-ari/). 
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+secondHighest_r = app(r,function(x) sort(x, decreasing =TRUE)[2])
+at=c(-Inf,seq(27.5,50,2.5),Inf) #the Inf bookends add the hats/trinagles to the colour scale plot 
+sp::spplot(secondHighest_r,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="2nd highest value in 40 year dataset")
+```
+The evd package provides methods for fitting different extreme value distributions (EVDs) to data. It also including non-stationary fitting and significance tests. Below we use the loopevd function raster_evd to fit Gumebel, Generlised Extreme Value (GEV) and mixed climate EVDs with the evd functions of fgumbel(), fgev and fgumbelx(). Note if parallel processes in possible with your install of terra, the raster_evd can allocate the number of cores the terra::app function uses for analysis.  
+
+```{r, include=FALSE}
+
+system.time(gumbel_r <- raster_evd(r,"fgumbel",silent=TRUE))
+
+system.time(gev_r <- raster_evd(r,"fgev",silent=TRUE))
+
+system.time(try(gumbelx_r <- raster_evd(r,"fgumbelx",silent=TRUE,ntrys = 3),silent=TRUE))
+gev_r
+```
+the `loopevd` function `raster_evd()` function returns a spatRaster object with layers for each of the EVD paramters location(loc) scale shape and covariate matrix. 
+
+Below the loopevd function gev_rl can then be used to generate the modelled 20 year ARI (5% AEP) fitted to all points from the gev_r object. Note there are differences between the the second highest emperical ARI (above) and the modelled ARI fitted to all data (below).   
+
+```{r  out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+gev_rl20 = terra::app(x = gev_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
+at=c(-Inf,seq(27.5,50,2.5),Inf)
+cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
+#pdf("../plots/Empirical_20_year_ARI_daily_max_temp.pdf")
+sp::spplot(gev_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="GEV 20 year ARI")
+```
+
+Importantly, the above plots assume the climate is stationary and the AEP represent the period centered on the 40 years (1980 to 2019), where a AEP at the start of the 40 year period may not have the same probability at the end of the time period due to a change climate. Noting the [IPCC](https://www.ipcc.ch/sr15/faq/faq-chapter-1/) "By the decade 2006–2015, human activity had warmed the world by 0.87°C (±0.12°C) compared to pre-industrial times (1850–1900). If the current warming rate continues, the world would reach human-induced global warming of 1.5°C around 2040" 
+
+The `evd` pacakge allows the fitting of non-stationary EVDs parameters (loc scale or shape) using a covariate such as the global temperature below. 
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+r_years = as.numeric(format(time(r),"%Y"))
+#https://psl.noaa.gov/data/climateindices/list/
+dat = read.table("https://psl.noaa.gov/data/correlation/gmsst.data",skip=1,fill = TRUE,header = FALSE)
+#dat = read.table("https://psl.noaa.gov/data/correlation/soi.data",skip=1,fill = TRUE,header = FALSE)
+#n = dim(dat)[1]
+#dat = cbind(dat[,1][-n],dat[,8:13][-n,],dat[,2:7][-1,]) 
+dat[dat == -99.99] = NA
+CI = suppressWarnings(data.frame(year = dat[,1],yearMean = apply(dat[,-1],MARGIN = 1,FUN = function(x) mean(as.numeric(x),na.rm=TRUE))))
+#https://www.ipcc.ch/sr15/faq/faq-chapter-1/ 
+CI = CI[CI$year >= min(r_years) & CI$year <= max(r_years) & !is.na(CI$year),]
+CI$yearMeanRoll = zoo::rollmean(CI$yearMean,20,fill=NA)
+nt = length(time(r))
+nsloc = data.frame(year = seq(-1,1,,nt)) #linear trend
+nsloc = data.frame(yearMean = CI$yearMean) #climate index
+
+
+
+nsloc = centredAndScaled(nsloc)
+plot(r_years,nsloc[,1],xlab = "Year",ylab = "Nonstationary Location covariate")
+zero_year = approx(nsloc[,1],r_years,0)$y
+abline(v = zero_year)
+grid()
+
+#print("gridded non stationary gumbel fit:")
+system.time(gumbelns_r <- suppressWarnings(raster_evd(r,"fgumbel",nsloc = nsloc)))
+
+#print("gridded non stationary gev fit:")
+system.time(gevns_r <- suppressWarnings(raster_evd(r,"fgev",nsloc = nsloc)))
+
+```
+
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+AICs_r = c(gumbel_r$AIC,gev_r$AIC,gumbelns_r$AIC,gevns_r$AIC,gumbelx_r$AIC) 
+best = app(AICs_r,which.min,na.rm=TRUE)
+plot(best,col = c("black","red","grey","yellow","green"),plg=list(legend=c("gumbel", "gev", "gumbel_ns","gev_ns","gumbelx")),main = "Which EVD is best (lowest AIC)")
+lines(coastp)
+#writeRaster(best,paste0(datadir,"best_EVD.tif"))
+```
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+#find where gev shape is significant, defined as (1 − p-value) × 100
+
+mle_sig = se_sig(gevns_r$shape,gevns_r$cov_16)
+
+at = c(-Inf,seq(50,100,5))
+
+#where mle(par) +-1.95 se(par) is entirely on one side of zero"
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(20)),main = "Confidence Value For a non-stationary GEV shape parameter",
+           sp.layout = coast.layer)
+
+```
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+#find where gev non-stationary location is significant, defined as (1 − p-value) × 100
+
+mle_sig = se_sig(gevns_r$locyearMean,gevns_r$cov_6)
+
+at = c(-Inf,seq(50,100,5))
+
+#where mle(par) +-1.95 se(par) is entirely on one side of zero"
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For a non-stationary  location parameter",
+           sp.layout = coast.layer)
+
+```
+
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+zero_year = round(approx(nsloc$yearMean,r_years,0)$y)
+
+gevns_rl20 = terra::app(x = gevns_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
+at=c(-Inf,seq(27.5,50,2.5),Inf)
+cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
+#pdf("../plots/Empirical_20_year_ARI_daily_max_temp.pdf")
+sp::spplot(gevns_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main=paste0("GEV_ns 20 year ARI for the year ",zero_year))
+```
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+yeari = 2019
+ncloci = approx(r_years,nsloc$yearMean,yeari)$y
+gevns_rl20 = terra::app(x = gevns_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
+
+at=c(-Inf,seq(27.5,50,2.5),Inf)
+cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
+#pdf("../plots/Empirical_20_year_ARI_daily_max_temp.pdf")
+sp::spplot(gevns_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main=paste0("GEV_ns 20 year ARI for the year ",yeari))
+```
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+yeari = 1980
+ncloci = approx(r_years,nsloc$yearMean,yeari)$y
+gevns_rl20_1980 = terra::app(x = gevns_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
+
+yeari = 2019
+ncloci = approx(r_years,nsloc$yearMean,yeari)$y
+gevns_rl20_2019 = terra::app(x = gevns_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
+at = c(-Inf,seq(-4,4,.5),Inf)
+sp::spplot(gevns_rl20_2019-gevns_rl20_1980,at=at,col.regions =c("#FFFFFF",rev(rwb(17)),"#000000"),main=paste0("Non-stationary change in 5% AEP GEV extremes 1980 to 2019"))
+```
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+poi = vect(rbind(c(142.91964371685395,-35.873803703002594)) ,"points")
+#extract a time series for the point of interest
+poi_ts = data.frame(date = time(r),annMax = as.numeric(extract(r,poi))[-1])
+
+
+
+gevns_v = extract(rast(gevns_r),poi)[-1]
+
+
+gevns_63AEP = qevd_vector(x = gevns_v,p = 1-0.63,evd_mod_str = "fgev") + nsloc$yearMean*gevns_v$locyearMean_locyearMean
+gevns_05AEP = qevd_vector(x = gevns_v,p = 1-0.05,evd_mod_str = "fgev") + nsloc$yearMean*gevns_v$locyearMean_locyearMean
+gevns_01AEP = qevd_vector(x = gevns_v,p = 1-0.01,evd_mod_str = "fgev") + nsloc$yearMean*gevns_v$locyearMean_locyearMean
+
+YLIM = c(min(poi_ts$annMax),max(gevns_01AEP))
+plot(poi_ts,type = "l",main = "Non stationary EVD",ylim = YLIM);grid()
+
+poi_ts$annMaxns = poi_ts$annMax-nsloc$yearMean*gevns_v$locyearMean_locyearMean
+lines(poi_ts$date,poi_ts$annMaxns,col="grey")
+
+lines(r_years,gevns_63AEP,col = 4)
+lines(r_years,gevns_05AEP,col = 2)
+lines(r_years,gevns_01AEP,col = 6)
+
+legend("bottomright",c("1% AEP","5% AEP","63% AEP","AnnMax","AnnMax_stat"),col = c(6,2,4,1,"grey"),lty=1,ncol = 2)
+
+
+
+```
+
+
+```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
+ndat = length(poi_ts$annMax)
+
+empi_AEP = -1/log((1:ndat)/(ndat + 1))
+AEP = 1-exp(-1/empi_AEP)
+
+gumbel_v = extract(rast(gumbel_r),poi)[-1]
+gev_v = extract(rast(gev_r),poi)[-1]
+gumbelns_v = extract(rast(gumbelns_r),poi)[-1]
+gumbelx_v = extract(rast(gumbelx_r),poi)[-1]
+
+
+gumbel_RL = qevd_vector(x = gumbel_v,p = 1-AEP,evd_mod_str = "fgumbel")
+gev_RL = qevd_vector(x = gev_v,p = 1-AEP,evd_mod_str = "fgev")
+gumbelns_RL = qevd_vector(x = gumbelns_v,p = 1-AEP,evd_mod_str = "fgumbel")
+gevns_RL = qevd_vector(x = gevns_v,p = 1-AEP,evd_mod_str = "fgev")
+gumbelx_RL = qevd_vector(x = gumbelx_v,p = 1-AEP,evd_mod_str = "fgumbelx")
+
+plot_emperical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
+lines(empi_AEP,gumbel_RL)
+lines(empi_AEP,gev_RL,col=2)
+#lines(empi_AEP,gumbelx_RL,col="green")
+lines(empi_AEP,gumbelns_RL,col="grey")
+lines(empi_AEP,gevns_RL,col="yellow")
+
+#legend('topleft',legend = paste0(c("fgumbelx","fgev","fgumbel","fgumbelns"),rep(" AIC = ",4),round(as.numeric(c(rev(gumbelx)[1],rev(gev)[1],rev(gumbel)[1],rev(gumbelns)[1])),1)),col = c(4,2,1,"grey"),lty = 1)
+ legend('bottomright',legend = paste0(c("fgev","fgumbel","fgumbelns","fgevns"),rep(" AIC = ",4),round(as.numeric(c(rev(gev_v)[1],rev(gumbel_v)[1],rev(gumbelns_v)[1],rev(gevns_v)[1])),1)),col = c(2,1,"grey","yellow"),lty = 1)
+
+```
+
+
+
+```{r}
+# = terra::rast(system.file("extdata/50km_AnnMax_agcd_v1_precip_calib_r005_daily_1980-2019.nc",package = "loopevd"))
+
+```
+
+
+
