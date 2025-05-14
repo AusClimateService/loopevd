@@ -2,31 +2,31 @@
 % Please edit documentation in R/loopFuns.R
 \name{aunnal_max}
 \alias{aunnal_max}
-\title{Compute Annual Maximum and Mean Water Levels}
+\title{Compute Annual Maximum and Mean of on the Hour Records}
 \usage{
-aunnal_max(DF, waterLevel_attribute = "sea_level")
+aunnal_max(DF, record_attribute = "sea_level")
 }
 \arguments{
 \item{DF}{A \code{data.frame} containing at least:
 \itemize{
 \item \code{date}: a \code{Date} or \code{POSIXt} column of observation timestamps
-\item a numeric column of water levels
+\item a numeric column of values
 }}
 
-\item{waterLevel_attribute}{A \code{character} string giving the name of the column in \code{DF} containing the water level values.  Defaults to \code{"sea_level"}.}
+\item{record_attribute}{A \code{character} string giving the name of the column in \code{DF} containing the values.  Defaults to \code{"sea_level"}.}
 }
 \value{
 A \code{data.frame} with one row per year (for years where at least one non‐\code{NA} value is present), containing:
 \itemize{
-\item \code{annMax} ‒ the annual maximum water level
-\item \code{annMean} ‒ the annual mean water level (calendar year)
+\item \code{annMax} ‒ the annual maximum
+\item \code{annMean} ‒ the annual mean (calendar year)
 \item \code{datestr} ‒ the date/time of the annual maximum, formatted \code{"YYYYmmddHH"}
 \item \code{date} ‒ the \code{POSIXt} timestamp of the annual maximum
 \item \code{pc_complete} ‒ the fraction (0–1) of hourly‐timestamped samples available in that year
 }
 }
 \description{
-\code{aunnal_max()} takes a data frame of daily (or sub‐daily) water level observations and returns a summary of the annual maximum and mean water levels, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
+\code{aunnal_max()} takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
 }
 \details{
 For each year, only observations exactly on the hour (\code{minute == 0} & \code{second == 0}) are counted toward completeness.  If no valid data exist for a year, that year is dropped from the output.

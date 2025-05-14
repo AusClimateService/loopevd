@@ -11,6 +11,7 @@
 #'     \item \code{datestr}: timestamp strings for the maxima
 #'     \item \code{date}: POSIX timestamps for the maxima
 #'     \item \code{pc_complete}: completeness fraction per year
+#'     \item \code{zero}: the zero level
 #'   }
 #'   If non-stationary fitting is required, each element may also include an \code{nsloc} matrix of covariates.
 #' @param evd_mod_str A \code{character} string specifying which fitting function from \pkg{evd} to use: \code{"fgumbel"}, \code{"fgumbelx"} or \code{"fgev"}.
@@ -19,14 +20,15 @@
 #' @param pc_complete Numeric scalar (0–1). Minimum completeness fraction for a year to be included. Defaults to \code{0.8}.
 #' @param minyear Numeric. Minimum calendar year to include. Defaults to \code{1800}.
 #' @param maxyear Numeric. Maximum calendar year to include. Defaults to \code{2100}.
-#' @param mslAtt \code{character}. Name of the mean-sea-level attribute in each data.frame (e.g.\ \code{"annMean"}). Defaults to \code{"annMean"}.
+#' @param mslAtt \code{character}. Name of the attribute to be removed from annMax in each data.frame (e.g.\ \code{"annMean"} or \code{"zero"}). Defaults to \code{"annMean"}.
 #'
 #' @return A \code{data.frame} with one row per list element, containing the parameters returned by \code{evd_params()} for each annual-max series.
 #'
 #' @examples
 #' dates = seq.Date(as.Date("1990-01-01"),as.Date("2019-12-31"), "day")
 #' lst = lapply(1:10,function(x) loopevd::aunnal_max(data.frame(date = dates,
-#'                   sea_level = stats::rnorm(length(dates),mean=x/10,sd = x))))
+#'                   sea_level = stats::rnorm(length(dates),mean=x/10,sd = x),
+#'                   zero = rep(0,length(dates)))))
 #' loopevd::list_evd(lst,"fgumbel",pc_complete=0)
 #' @export
 list_evd = function(lst,evd_mod_str,nsloc=NULL,outfile=NULL,pc_complete=0.8,minyear=1800,maxyear=2100,mslAtt = "annMean"){
@@ -104,14 +106,15 @@ centredAndScaled = function(nsloc = NULL){
 #'
 #' @return the parameters of the evd in a SpatRasterDataset
 #' @export
+#' @seealso [evd::fgev()], [evd::fgumbelx()]
 #'
 #' @examples
 #' require(terra)
 #' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc"
 #' ,package = "loopevd"))
-#' gumbel_r = raster_evd(r,"fgumbel")
+#' gumbel_r = raster_fevd(r,"fgumbel")
 #' plot(gumbel_r$loc,main = "location")
-raster_evd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,silent = FALSE){
+raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,silent = FALSE){
 
   set.seed(1)
   uvdata <- evd::rgev(100, loc = 0.13, scale = 1.1, shape = 0.2)
@@ -319,19 +322,19 @@ plot_emperical = function(x,xns=NULL,unitz = "-",...){
   graphics::grid()
 }
 
-#' Compute Annual Maximum and Mean Water Levels
+#' Compute Annual Maximum and Mean of on the Hour Records
 #'
 #' @description
-#' `aunnal_max()` takes a data frame of daily (or sub‐daily) water level observations and returns a summary of the annual maximum and mean water levels, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
+#' `aunnal_max()` takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
 #'
 #' @param DF A `data.frame` containing at least:
 #'   * `date`: a `Date` or `POSIXt` column of observation timestamps
-#'   * a numeric column of water levels
-#' @param waterLevel_attribute A `character` string giving the name of the column in `DF` containing the water level values.  Defaults to `"sea_level"`.
+#'   * a numeric column of values
+#' @param record_attribute A `character` string giving the name of the column in `DF` containing the values.  Defaults to `"sea_level"`.
 #'
 #' @return A `data.frame` with one row per year (for years where at least one non‐`NA` value is present), containing:
-#'   * `annMax` ‒ the annual maximum water level
-#'   * `annMean` ‒ the annual mean water level (calendar year)
+#'   * `annMax` ‒ the annual maximum
+#'   * `annMean` ‒ the annual mean (calendar year)
 #'   * `datestr` ‒ the date/time of the annual maximum, formatted `"YYYYmmddHH"`
 #'   * `date` ‒ the `POSIXt` timestamp of the annual maximum
 #'   * `pc_complete` ‒ the fraction (0–1) of hourly‐timestamped samples available in that year
@@ -351,9 +354,9 @@ plot_emperical = function(x,xns=NULL,unitz = "-",...){
 #' head(am)
 #'
 #' @export
-aunnal_max = function(DF,waterLevel_attribute = "sea_level"){
+aunnal_max = function(DF,record_attribute = "sea_level"){
   tm = DF$date
-  dat = DF[[waterLevel_attribute]]
+  dat = DF[[record_attribute]]
   YR = as.numeric(format(tm,"%Y"))
   YRS = unique(YR)
   MINS = as.numeric(format(tm,"%M"))
@@ -380,12 +383,13 @@ aunnal_max = function(DF,waterLevel_attribute = "sea_level"){
   }
   annMax[as.numeric(annMax) == -Inf] = NaN
   notNAN = !is.nan(annMax)
+  zero = annMax*0
   out = data.frame(annMax = annMax[notNAN],annMean = annMean[notNAN],datestr = format(annMaxTm[notNAN],"%Y%m%d%H"),
-                   date = annMaxTm[notNAN],pc_complete=pc_complete[notNAN])#,runMaxAtTm = runMaxAtTm[notNAN],runAnnMaxAtTm = runAnnMaxAtTm[notNAN])
+                   date = annMaxTm[notNAN],pc_complete=pc_complete[notNAN],zero = zero[notNAN])#,runMaxAtTm = runMaxAtTm[notNAN],runAnnMaxAtTm = runAnnMaxAtTm[notNAN])
   return(out)
 }
 
-#' Return a Vector or EVD Quantiles
+#' Return a Vector of EVD Quantiles
 #'
 #' @param x vector of EVD paramters
 #' @param p vector of probabilities.
@@ -393,11 +397,13 @@ aunnal_max = function(DF,waterLevel_attribute = "sea_level"){
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
 #' @return gives the quantile function corresponding to p
 #' @export
+#' @seealso [evd::qgev()], [evd::qgumbelx()]
 #'
 #' @examples
 #' qevd_vector(c(1,0.5),0.5,"fgumbel")
 qevd_vector = function(x,p,evd_mod_str,interval = NULL){
   x = as.numeric(x)
+  #if(is.null(dim(x)[1])) stop("x must have evd parameters for one site only")
   out = NA
   if(evd_mod_str == "fgumbel"  ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = TRUE),silent = TRUE)
   if(evd_mod_str == "fgev"     ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = x[3], lower.tail = TRUE),silent = TRUE)
@@ -410,3 +416,27 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL){
   }
   return(out)
 }
+
+
+#' Return a raster of EVD Quantiles
+#'
+#' @param x spatRaster of EVD paramters, e.g. loc, scale, shape
+#' @param p probability value.
+#' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
+#' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
+#' @return gives the quantile function corresponding to p
+#' @export
+#'
+#' @seealso [evd::qgev()], [evd::qgumbelx()]
+#'
+#' @examples
+#' require(terra)
+#' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc",
+#'                      package = "loopevd"))
+#' gumbel_r = raster_fevd(r,"fgumbel")
+#' AEP_10pc = raster_qevd(gumbel_r,1-0.1,"fgumbel") # 10% Annual Exceedance Probability.
+raster_qevd = function(x,p,evd_mod_str,interval = NULL){
+  if(length(p) > 1) stop("provide one value p")
+  terra::app(x = x,fun = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval)
+}
+

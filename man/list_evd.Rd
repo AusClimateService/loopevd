@@ -23,6 +23,7 @@ list_evd(
 \item \code{datestr}: timestamp strings for the maxima
 \item \code{date}: POSIX timestamps for the maxima
 \item \code{pc_complete}: completeness fraction per year
+\item \code{zero}: the zero level
 }
 If non-stationary fitting is required, each element may also include an \code{nsloc} matrix of covariates.}
 
@@ -38,7 +39,7 @@ If non-stationary fitting is required, each element may also include an \code{ns
 
 \item{maxyear}{Numeric. Maximum calendar year to include. Defaults to \code{2100}.}
 
-\item{mslAtt}{\code{character}. Name of the mean-sea-level attribute in each data.frame (e.g.\ \code{"annMean"}). Defaults to \code{"annMean"}.}
+\item{mslAtt}{\code{character}. Name of the attribute to be removed from annMax in each data.frame (e.g.\ \code{"annMean"} or \code{"zero"}). Defaults to \code{"annMean"}.}
 }
 \value{
 A \code{data.frame} with one row per list element, containing the parameters returned by \code{evd_params()} for each annual-max series.
@@ -49,6 +50,7 @@ Fits an extreme value distribution to each element of a list of annual maxima se
 \examples{
 dates = seq.Date(as.Date("1990-01-01"),as.Date("2019-12-31"), "day")
 lst = lapply(1:10,function(x) loopevd::aunnal_max(data.frame(date = dates,
-                  sea_level = stats::rnorm(length(dates),mean=x/10,sd = x))))
+                  sea_level = stats::rnorm(length(dates),mean=x/10,sd = x),
+                  zero = rep(0,length(dates)))))
 loopevd::list_evd(lst,"fgumbel",pc_complete=0)
 }
