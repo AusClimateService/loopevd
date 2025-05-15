@@ -4,7 +4,7 @@
 \alias{qevd_vector}
 \title{Return a Vector of EVD Quantiles}
 \usage{
-qevd_vector(x, p, evd_mod_str, interval = NULL)
+qevd_vector(x, p, evd_mod_str, interval = NULL, lower.tail = TRUE)
 }
 \arguments{
 \item{x}{vector of EVD paramters}
@@ -14,6 +14,8 @@ qevd_vector(x, p, evd_mod_str, interval = NULL)
 \item{evd_mod_str}{either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package}
 
 \item{interval}{A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.}
+
+\item{lower.tail}{Logical; if TRUE (default), \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.}
 }
 \value{
 gives the quantile function corresponding to p

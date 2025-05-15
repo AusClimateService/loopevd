@@ -4,7 +4,7 @@
 \alias{raster_qevd}
 \title{Return a raster of EVD Quantiles}
 \usage{
-raster_qevd(x, p, evd_mod_str, interval = NULL)
+raster_qevd(x, p, evd_mod_str, interval = NULL, lower.tail = TRUE)
 }
 \arguments{
 \item{x}{spatRaster of EVD paramters, e.g. loc, scale, shape}
@@ -14,6 +14,8 @@ raster_qevd(x, p, evd_mod_str, interval = NULL)
 \item{evd_mod_str}{either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package}
 
 \item{interval}{A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.}
+
+\item{lower.tail}{Logical; if TRUE (default), probabilities are \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.}
 }
 \value{
 gives the quantile function corresponding to p

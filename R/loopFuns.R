@@ -262,8 +262,7 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntrys = 3,sile
 #' @description
 #' Computes the one-sided confidence level, defined as (1 − p-value) × 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
 #'
-#' @param mu   Numeric vector, or SpatRaster of mean (location) values to test against zero.
-#' @param vari Numeric vector, or SpatRaster of variances corresponding to each `mu`.
+#' @param muvari   Numeric array, of mean (location) values, variances corresponding to each `mu` to test against zero.
 #'
 #' @return A numeric vector of confidence levels (0–100%), each rounded to one decimal place.
 #'
@@ -278,24 +277,51 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntrys = 3,sile
 #'
 #' @examples
 #' # Single value
-#' se_sig(mu = 2, vari = 1)
+#' se_sig(muvari = cbind(2,1))
 #'
 #' # Vector of values
-#' se_sig(mu = c(-1, 0, 1), vari = c(1, 2, 3))
+#' se_sig(muvari = cbind(c(-1, 0, 1),c(1, 2, 3)))
 #'
 #' @importFrom stats pnorm
 #' @export
-se_sig  = function(mu,vari){
-  se = sqrt(vari)
-  sng = sign(mu)
-  sr = class(mu) == class(rast())
-  if(!sr) out = round(pnorm(abs(mu/se))*100,1) #mu is the loc, or distance to zero. this is normalised to the nuber of standard deviations
-  if(sr) {
-    f = function(x) round(pnorm(x)*100,1)
-    out = terra::app(x = abs(mu/se),fun = f)
-  }
-  return(out)
+se_sig = function(muvari) {
+  mu = muvari[1]
+  vari = muvari[2]
+  se = sqrt(vari)                # Standard error
+  z = abs(mu / se)               # Absolute z-score
+  p_value = 1 - pnorm(z)         # One-tailed p-value
+  confidence_percent = (1 - p_value) * 100  # Confidence level as percentage
+  return(round(confidence_percent, 2))      # Rounded for clarity
 }
+
+
+#' Calculate One-Sided Confidence Level (%)
+#'
+#' @description
+#' Computes the one-sided confidence level, defined as (1 − p-value) × 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
+#'
+#' @param muvari   SpatRaster, of mean (location) values, variances corresponding to each `mu` to test against zero.
+#'
+#' @return A SpatRaster of confidence levels (0–100%), each rounded to one decimal place.
+#'
+#' @details
+#' For each element:
+#' 1. Calculate the standard error:
+#'    `se = sqrt(vari)`.
+#' 2. Compute the absolute z-score:
+#'    `z = abs(mu / se)`.
+#' 3. The one-sided p-value is `1 − Φ(z)`, where Φ is the CDF of the standard normal.
+#' 4. The confidence level is `(1 − p-value) × 100 = Φ(z) × 100`.
+#'
+#' @examples
+#' require(terra)
+#' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc",
+#'                      package = "loopevd"))
+#' gev_r = raster_fevd(r,"fgev")
+#' raster_se_sig(c(gev_r$shape,gev_r$cov_9))
+#' @importFrom stats pnorm
+#' @export
+raster_se_sig = function(muvari) terra::app(muvari,se_sig)
 
 
 #' Plot the Emperical Return Level Data
@@ -395,24 +421,25 @@ aunnal_max = function(DF,record_attribute = "sea_level"){
 #' @param p vector of probabilities.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
+#' @param lower.tail Logical; if TRUE (default), \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
 #' @return gives the quantile function corresponding to p
 #' @export
 #' @seealso [evd::qgev()], [evd::qgumbelx()]
 #'
 #' @examples
 #' qevd_vector(c(1,0.5),0.5,"fgumbel")
-qevd_vector = function(x,p,evd_mod_str,interval = NULL){
+qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
   x = as.numeric(x)
   #if(is.null(dim(x)[1])) stop("x must have evd parameters for one site only")
   out = NA
-  if(evd_mod_str == "fgumbel"  ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = TRUE),silent = TRUE)
-  if(evd_mod_str == "fgev"     ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = x[3], lower.tail = TRUE),silent = TRUE)
+  if(evd_mod_str == "fgumbel"  ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = lower.tail),silent = TRUE)
+  if(evd_mod_str == "fgev"     ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = x[3], lower.tail = lower.tail),silent = TRUE)
   if(evd_mod_str == "fgumbelx" ) {
     if(is.null(interval[1])) {
-      try(gumq <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = TRUE),silent = TRUE)
+      try(gumq <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = TRUE),silent = lower.tail)
       try(interval <- gumq+(evd::qgev(p, loc = 0, scale = x[2], shape = 0, lower.tail = TRUE))*c(-2,2),silent = TRUE)
     }
-    try(out <- evd::qgumbelx(p,interval, loc1 = x[1], scale1 = x[2], loc2 = x[3],scale2=x[4], lower.tail = TRUE),silent = TRUE)
+    if(!is.null(interval[1])) try(out <- evd::qgumbelx(p = p,interval = interval, loc1 = x[1], scale1 = x[2], loc2 = x[3],scale2=x[4], lower.tail = lower.tail),silent = TRUE)
   }
   return(out)
 }
@@ -424,6 +451,7 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL){
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
+#' @param lower.tail Logical; if TRUE (default), probabilities are \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
 #' @return gives the quantile function corresponding to p
 #' @export
 #'
@@ -435,8 +463,8 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL){
 #'                      package = "loopevd"))
 #' gumbel_r = raster_fevd(r,"fgumbel")
 #' AEP_10pc = raster_qevd(gumbel_r,1-0.1,"fgumbel") # 10% Annual Exceedance Probability.
-raster_qevd = function(x,p,evd_mod_str,interval = NULL){
+raster_qevd = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
   if(length(p) > 1) stop("provide one value p")
-  terra::app(x = x,fun = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval)
+  terra::app(x = x,fun = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval,lower.tail=lower.tail)
 }
 
