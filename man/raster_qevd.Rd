@@ -7,7 +7,7 @@
 raster_qevd(x, p, evd_mod_str, interval = NULL, lower.tail = TRUE)
 }
 \arguments{
-\item{x}{spatRaster of EVD paramters, e.g. loc, scale, shape}
+\item{x}{SpatRasterDataset of EVD paramters, e.g. loc, scale, shape}
 
 \item{p}{probability value.}
 

@@ -422,24 +422,37 @@ aunnal_max = function(DF,record_attribute = "sea_level"){
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
 #' @param lower.tail Logical; if TRUE (default), \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
+#' @param nams names of the values of x (optional)
 #' @return gives the quantile function corresponding to p
 #' @export
 #' @seealso [evd::qgev()], [evd::qgumbelx()]
 #'
 #' @examples
-#' qevd_vector(c(1,0.5),0.5,"fgumbel")
-qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
+#' qevd_vector(c(1,0.5),1-0.05,"fgumbel",nams = c("loc","scale"))
+#' df = data.frame(loc = 1,scale = 0.5)
+#' qevd_vector(df,1-0.05,"fgumbel")
+#'
+qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE,nams = NULL){
+  if(is.null(nams[1])) nams = names(x)
+  loci = which(nams == "loc")
+  scalei = which(nams == "scale")
+  shapei = which(nams == "shape")
+  loc1i = which(nams == "loc1")
+  scale1i = which(nams == "scale1")
+  loc2i = which(nams == "loc2")
+  scale2i = which(nams == "scale2")
+
   x = as.numeric(x)
   #if(is.null(dim(x)[1])) stop("x must have evd parameters for one site only")
   out = NA
-  if(evd_mod_str == "fgumbel"  ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = lower.tail),silent = TRUE)
-  if(evd_mod_str == "fgev"     ) try(out <- evd::qgev(p, loc = x[1], scale = x[2], shape = x[3], lower.tail = lower.tail),silent = TRUE)
+  if(evd_mod_str == "fgumbel"  ) try(out <- evd::qgev(p, loc = x[loci], scale = x[scalei], shape = 0, lower.tail = lower.tail),silent = TRUE)
+  if(evd_mod_str == "fgev"     ) try(out <- evd::qgev(p, loc = x[loci], scale = x[scalei], shape = x[shapei], lower.tail = lower.tail),silent = TRUE)
   if(evd_mod_str == "fgumbelx" ) {
     if(is.null(interval[1])) {
-      try(gumq <- evd::qgev(p, loc = x[1], scale = x[2], shape = 0, lower.tail = TRUE),silent = lower.tail)
-      try(interval <- gumq+(evd::qgev(p, loc = 0, scale = x[2], shape = 0, lower.tail = TRUE))*c(-2,2),silent = TRUE)
+      try(gumq <- evd::qgev(p, loc = x[loci], scale = x[scalei], shape = 0, lower.tail = TRUE),silent = lower.tail)
+      try(interval <- gumq+(evd::qgev(p, loc = 0, scale = x[scalei], shape = 0, lower.tail = TRUE))*c(-2,2),silent = TRUE)
     }
-    if(!is.null(interval[1])) try(out <- evd::qgumbelx(p = p,interval = interval, loc1 = x[1], scale1 = x[2], loc2 = x[3],scale2=x[4], lower.tail = lower.tail),silent = TRUE)
+    if(!is.null(interval[1])) try(out <- evd::qgumbelx(p = p,interval = interval, loc1 = x[loc1i], scale1 = x[scale1i], loc2 = x[loc2i],scale2=x[scale2i], lower.tail = lower.tail),silent = TRUE)
   }
   return(out)
 }
@@ -447,7 +460,7 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
 
 #' Return a raster of EVD Quantiles
 #'
-#' @param x spatRaster of EVD paramters, e.g. loc, scale, shape
+#' @param x SpatRasterDataset of EVD paramters, e.g. loc, scale, shape
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
@@ -464,7 +477,30 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
 #' gumbel_r = raster_fevd(r,"fgumbel")
 #' AEP_10pc = raster_qevd(gumbel_r,1-0.1,"fgumbel") # 10% Annual Exceedance Probability.
 raster_qevd = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
+  if(class(x) != class(sds(rast()))) stop("x must be of the class SpatRasterDataset")
   if(length(p) > 1) stop("provide one value p")
-  terra::app(x = x,fun = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval,lower.tail=lower.tail)
+  terra::app(x = x,fun = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval,lower.tail=lower.tail,nams = names(x))
 }
 
+
+#' Return a data.frame of EVD Quantiles
+#'
+#' @param x data.frame of EVD paramters, e.g. loc, scale, shape
+#' @param p probability value.
+#' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
+#' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
+#' @param lower.tail Logical; if TRUE (default), probabilities are \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
+#' @return gives the quantile function corresponding to p
+#' @export
+#'
+#' @seealso [evd::qgev()], [evd::qgumbelx()]
+#'
+#' @examples
+#' df = data.frame(loc = 1,scale = 0.5)
+#' qevd_vector(df,1-0.05,"fgumbel")
+df_qevd = function(x,p,evd_mod_str, interval = NULL,lower.tail = TRUE){
+  if(class(x) != class(data.frame())) stop("x must be a data.frame")
+  if(length(p) > 1) stop("provide one value p")
+  out = apply(X = x,MARGIN = 1,FUN = loopevd::qevd_vector, p = p, evd_mod_str = evd_mod_str,interval=interval,lower.tail=lower.tail)
+  out
+}

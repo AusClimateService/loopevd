@@ -182,16 +182,24 @@ crs(r) = crs(poi)
 valz =  as.numeric(extract(r,poi,ID = FALSE))
 poi_ts = data.frame(date = time(r),annMax = valz)
 
+gumbel_v = extract(gumbel_r,poi,xy=FALSE,ID=FALSE)
+gumbel_v = as.data.frame(t(sapply(gumbel_v, function(x) x[[1]])))
 
 gev_v = extract(gev_r,poi,xy=FALSE,ID=FALSE)
 gev_v = as.data.frame(t(sapply(gev_v, function(x) x[[1]])))
 
+gumbelx_v = extract(gumbelx_r,poi,xy=FALSE,ID=FALSE)
+gumbelx_v = as.data.frame(t(sapply(gumbelx_v, function(x) x[[1]])))
+
+gumbelns_v = extract(gumbelns_r,poi,xy=FALSE,ID=FALSE)
+gumbelns_v = as.data.frame(t(sapply(gumbelns_v, function(x) x[[1]])))
+
 gevns_v = extract(gevns_r,poi,xy=FALSE,ID=FALSE)
 gevns_v = as.data.frame(t(sapply(gevns_v, function(x) x[[1]])))
 
-gevns_63AEP = qevd_vector(x = gev_v,p = 1-0.63,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
-gevns_05AEP = qevd_vector(x = gev_v,p = 1-0.05,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
-gevns_01AEP = qevd_vector(x = gev_v,p = 1-0.01,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
+gevns_63AEP = df_qevd(x = gev_v,p = 1-0.63,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
+gevns_05AEP = df_qevd(x = gev_v,p = 1-0.05,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
+gevns_01AEP = df_qevd(x = gev_v,p = 1-0.01,evd_mod_str = "fgev") + nsloctab$year_cs*gevns_v$locyear
 
 YLIM = c(min(poi_ts$annMax),max(gevns_01AEP))
 plot(r_years,valz,type = "l",main = "Non stationary EVD",ylim = YLIM);grid()
@@ -216,17 +224,11 @@ ndat = length(poi_ts$annMax)
 empi_AEP = -1/log((1:ndat)/(ndat + 1))
 AEP = 1-exp(-1/empi_AEP)
 
-gumbel_v = extract(rast(gumbel_r),poi)[-1]
-gev_v = extract(rast(gev_r),poi)[-1]
-gumbelns_v = extract(rast(gumbelns_r),poi)[-1]
-gumbelx_v = extract(rast(gumbelx_r),poi)[-1]
-
-
 gumbel_RL = qevd_vector(x = gumbel_v,p = 1-AEP,evd_mod_str = "fgumbel")
 gev_RL = qevd_vector(x = gev_v,p = 1-AEP,evd_mod_str = "fgev")
 gumbelns_RL = qevd_vector(x = gumbelns_v,p = 1-AEP,evd_mod_str = "fgumbel")
 gevns_RL = qevd_vector(x = gevns_v,p = 1-AEP,evd_mod_str = "fgev")
-gumbelx_RL = qevd_vector(x = gumbelx_v,p = 1-AEP,evd_mod_str = "fgumbelx")
+gumbelx_RL = qevd_vector(x = gumbelx_v,p = 1-AEP,evd_mod_str = "fgumbelx",interval = c(0,20))
 
 plot_emperical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
 lines(empi_AEP,gumbel_RL)
