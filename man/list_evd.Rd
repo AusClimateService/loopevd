@@ -16,7 +16,7 @@ list_evd(
 )
 }
 \arguments{
-\item{lst}{A \code{list} of \code{data.frame}s, each as returned by \code{aunnal_max()}, containing at least:
+\item{lst}{A \code{list} of \code{data.frame}s, each as returned by \code{annual_max()}, containing at least:
 \itemize{
 \item \code{annMax}: annual maximum values
 \item \code{annMean}: annual mean values
@@ -49,7 +49,7 @@ Fits an extreme value distribution to each element of a list of annual maxima se
 }
 \examples{
 dates = seq.Date(as.Date("1990-01-01"),as.Date("2019-12-31"), "day")
-lst = lapply(1:10,function(x) loopevd::aunnal_max(data.frame(date = dates,
+lst = lapply(1:10,function(x) loopevd::annual_max(data.frame(date = dates,
                   sea_level = stats::rnorm(length(dates),mean=x/10,sd = x),
                   zero = rep(0,length(dates)))))
 loopevd::list_evd(lst,"fgumbel",pc_complete=0)

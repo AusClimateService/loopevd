@@ -4,7 +4,7 @@
 #' @description
 #' Fits an extreme value distribution to each element of a list of annual maxima series, optionally using non-stationary covariates, and returns a table of fitted parameters.
 #'
-#' @param lst A \code{list} of \code{data.frame}s, each as returned by \code{aunnal_max()}, containing at least:
+#' @param lst A \code{list} of \code{data.frame}s, each as returned by \code{annual_max()}, containing at least:
 #'   \itemize{
 #'     \item \code{annMax}: annual maximum values
 #'     \item \code{annMean}: annual mean values
@@ -26,7 +26,7 @@
 #'
 #' @examples
 #' dates = seq.Date(as.Date("1990-01-01"),as.Date("2019-12-31"), "day")
-#' lst = lapply(1:10,function(x) loopevd::aunnal_max(data.frame(date = dates,
+#' lst = lapply(1:10,function(x) loopevd::annual_max(data.frame(date = dates,
 #'                   sea_level = stats::rnorm(length(dates),mean=x/10,sd = x),
 #'                   zero = rep(0,length(dates)))))
 #' loopevd::list_evd(lst,"fgumbel",pc_complete=0)
@@ -351,22 +351,22 @@ plot_emperical = function(x,xns=NULL,unitz = "-",...){
 #' Compute Annual Maximum and Mean of on the Hour Records
 #'
 #' @description
-#' `aunnal_max()` takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
+#' annual_max() takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
 #'
-#' @param DF A `data.frame` containing at least:
-#'   * `date`: a `Date` or `POSIXt` column of observation timestamps
+#' @param DF A data.frame containing at least:
+#'   * date: a Date or POSIXt column of observation timestamps
 #'   * a numeric column of values
-#' @param record_attribute A `character` string giving the name of the column in `DF` containing the values.  Defaults to `"sea_level"`.
+#' @param record_attribute A character string giving the name of the column in DF containing the values.  Defaults to "sea_level".
 #'
-#' @return A `data.frame` with one row per year (for years where at least one non‐`NA` value is present), containing:
-#'   * `annMax` ‒ the annual maximum
-#'   * `annMean` ‒ the annual mean (calendar year)
-#'   * `datestr` ‒ the date/time of the annual maximum, formatted `"YYYYmmddHH"`
-#'   * `date` ‒ the `POSIXt` timestamp of the annual maximum
-#'   * `pc_complete` ‒ the fraction (0–1) of hourly‐timestamped samples available in that year
+#' @return A data.frame with one row per year (for years where at least one nonNA value is present), containing:
+#'   * annMax ‒ the annual maximum
+#'   * annMean ‒ the annual mean (calendar year)
+#'   * datestr ‒ the date/time of the annual maximum, formatted "YYYYmmddHH"
+#'   * date ‒ the `POSIXt` timestamp of the annual maximum
+#'   * pc_complete ‒ the fraction (0 to 1) of hourly‐timestamped samples available in that year
 #'
 #' @details
-#' For each year, only observations exactly on the hour (`minute == 0` & `second == 0`) are counted toward completeness.  If no valid data exist for a year, that year is dropped from the output.
+#' For each year, only observations exactly on the hour (minute == 0 & second == 0) are counted toward completeness.  If no valid data exist for a year, that year is dropped from the output.
 #'
 #' @examples
 #' # generate example daily data
@@ -376,11 +376,11 @@ plot_emperical = function(x,xns=NULL,unitz = "-",...){
 #'   sea_level = rnorm(length(dates), mean = 0, sd = 1)
 #' )
 #' # compute annual summary
-#' am <- aunnal_max(DF)
+#' am <- annual_max(DF)
 #' head(am)
 #'
 #' @export
-aunnal_max = function(DF,record_attribute = "sea_level"){
+annual_max = function(DF,record_attribute = "sea_level"){
   tm = DF$date
   dat = DF[[record_attribute]]
   YR = as.numeric(format(tm,"%Y"))

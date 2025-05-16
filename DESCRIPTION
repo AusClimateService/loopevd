@@ -1,10 +1,10 @@
 Package: loopevd
 Title: Loop Functions for Extreme Value Distributions
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Julian", "O'Grady", , "julian.ogrady@csiro.au", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: file LICENSE
+Description: Performs extreme value analysis at multiple locations using functions from the evd package. Supports both point-based and gridded input data using the terra package, enabling flexible looping across spatial datasets for batch processing of GEV and Gumbel(x) fits.
+License: GPL (>= 3)
 Imports: terra, evd, ncdf4,stats,utils
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
