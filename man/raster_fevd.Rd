@@ -2,7 +2,7 @@
 % Please edit documentation in R/loopFuns.R
 \name{raster_fevd}
 \alias{raster_fevd}
-\title{Turn Raster of Annual Maximums into Extreme Value Distributions Paramters for Netcdf Output}
+\title{Turn Raster of Annual Maximums into Extreme Value Distributions parameters for Netcdf Output}
 \usage{
 raster_fevd(
   r,
@@ -10,7 +10,7 @@ raster_fevd(
   nsloc = NULL,
   outfile = NULL,
   cores = 1,
-  ntrys = 1,
+  ntries = 1,
   silent = FALSE
 )
 }
@@ -25,7 +25,7 @@ raster_fevd(
 
 \item{cores}{positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object. Ignored for functions that are implemented by terra in C++ (see under fun)}
 
-\item{ntrys}{integer number of attempts at fitting fgumbelx}
+\item{ntries}{integer number of attempts at fitting fgumbelx}
 
 \item{silent}{logical: should the report of error messages be suppressed?}
 }
@@ -33,7 +33,7 @@ raster_fevd(
 the parameters of the evd in a SpatRasterDataset
 }
 \description{
-Turn Raster of Annual Maximums into Extreme Value Distributions Paramters for Netcdf Output
+Turn Raster of Annual Maximums into Extreme Value Distributions parameters for Netcdf Output
 }
 \examples{
 require(terra)

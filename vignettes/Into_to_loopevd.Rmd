@@ -31,7 +31,7 @@ library(zoo)
 
 ```
 
-Colour palate for tempertrure a coast line of Australia for plotting can be defined by. 
+Colour palate for temperature a coast line of Australia for plotting can be defined by. 
 
 ```{r}
 cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
@@ -59,7 +59,7 @@ secondHighest_r = app(r,function(x) sort(x, decreasing =TRUE)[2])
 at=c(-Inf,seq(27.5,50,2.5),Inf) #the Inf bookends add the hats/trinagles to the colour scale plot 
 sp::spplot(secondHighest_r,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="2nd highest value in 40 year dataset")
 ```
-The evd package provides methods for fitting different extreme value distributions (EVDs) to data. It also including non-stationary fitting and significance tests. Below we use the loopevd function raster_fevd to fit Gumebel, Generlised Extreme Value (GEV) and mixed climate EVDs with the evd functions of fgumbel(), fgev and fgumbelx(). Note if parallel processes in possible with your install of terra, the raster_fevd can allocate the number of cores the terra::app function uses for analysis.  
+The evd package provides methods for fitting different extreme value distributions (EVDs) to data. It also including non-stationary fitting and significance tests. Below we use the loopevd function raster_fevd to fit Gumbel, Generalised Extreme Value (GEV) and mixed climate EVDs with the `evd` functions of `fgumbel()`, `fgev` and `fgumbelx()`. Note if parallel processes in possible with your install of `terra`, the raster_fevd can allocate the number of cores the terra::app function uses for analysis.  
 
 ```{r, include=FALSE}
 
@@ -67,12 +67,12 @@ system.time(gumbel_r <- raster_fevd(r,"fgumbel",silent=TRUE))
 
 system.time(gev_r <- raster_fevd(r,"fgev",silent=TRUE))
 
-system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntrys = 3),silent=TRUE))
+system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntries = 3),silent=TRUE))
 gev_r
 ```
 the `loopevd` function `raster_fevd()` function returns a spatRaster object with layers for each of the EVD paramters location(loc) scale shape and covariate matrix. 
 
-Below the loopevd function gev_rl can then be used to generate the modelled 20 year ARI (5% AEP) fitted to all points from the gev_r object. Note there are differences between the the second highest emperical ARI (above) and the modelled ARI fitted to all data (below).   
+Below the loopevd function gev_rl can then be used to generate the modelled 20 year ARI (5% AEP) fitted to all points from the gev_r object. Note there are differences between the the second highest empirical ARI (above) and the modelled ARI fitted to all data (below).   
 
 ```{r  out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 gev_rl20 = raster_qevd(x = gev_r,p = 1-.05, evd_mod_str = "fgev") # terra::app(x = gev_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
@@ -84,7 +84,7 @@ sp::spplot(gev_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="GEV 20
 
 Importantly, the above plots assume the climate is stationary and the AEP represent the period centered on the 40 years (1980 to 2019), where a AEP at the start of the 40 year period may not have the same probability at the end of the time period due to a change climate. Noting the [IPCC](https://www.ipcc.ch/sr15/faq/faq-chapter-1/) "By the decade 2006–2015, human activity had warmed the world by 0.87°C (±0.12°C) compared to pre-industrial times (1850–1900). If the current warming rate continues, the world would reach human-induced global warming of 1.5°C around 2040" 
 
-The `evd` pacakge allows the fitting of non-stationary EVDs parameters (loc scale or shape) using a covariate such as the global temperature below. 
+The `evd` package allows the fitting of non-stationary EVDs parameters (loc scale or shape) using a covariate such as the global temperature below. 
 
 ```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 r_years = as.numeric(format(time(r),"%Y"))
@@ -115,7 +115,7 @@ grid()
 system.time(gumbelns_r <- suppressWarnings(raster_fevd(r,"fgumbel",nsloc = nsloc)))
 
 #print("gridded non stationary gev fit:")
-system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntrys = 3)))
+system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntries = 3)))
 
 ```
 
@@ -230,7 +230,7 @@ gumbelns_RL = qevd_vector(x = gumbelns_v,p = 1-AEP,evd_mod_str = "fgumbel")
 gevns_RL = qevd_vector(x = gevns_v,p = 1-AEP,evd_mod_str = "fgev")
 gumbelx_RL = qevd_vector(x = gumbelx_v,p = 1-AEP,evd_mod_str = "fgumbelx",interval = c(0,20))
 
-plot_emperical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
+plot_empirical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
 lines(empi_AEP,gumbel_RL)
 lines(empi_AEP,gev_RL,col=2)
 #lines(empi_AEP,gumbelx_RL,col="green")

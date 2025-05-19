@@ -7,7 +7,7 @@
 df_qevd(x, p, evd_mod_str, interval = NULL, lower.tail = TRUE)
 }
 \arguments{
-\item{x}{data.frame of EVD paramters, e.g. loc, scale, shape}
+\item{x}{data.frame of EVD parameters, e.g. loc, scale, shape}
 
 \item{p}{probability value.}
 

@@ -40,7 +40,7 @@ system.time(gumbel_r <- raster_fevd(r,"fgumbel",silent=TRUE))
 
 system.time(gev_r <- raster_fevd(r,"fgev",silent=TRUE))
 
-system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntrys = 3),silent=TRUE))
+system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntries = 3),silent=TRUE))
 gev_r
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
@@ -79,7 +79,7 @@ grid()
 system.time(gumbelns_r <- suppressWarnings(raster_fevd(r,"fgumbel",nsloc = nsloc)))
 
 #print("gridded non stationary gev fit:")
-system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntrys = 3)))
+system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntries = 3)))
 
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
@@ -184,7 +184,7 @@ gumbelns_RL = qevd_vector(x = gumbelns_v,p = 1-AEP,evd_mod_str = "fgumbel")
 gevns_RL = qevd_vector(x = gevns_v,p = 1-AEP,evd_mod_str = "fgev")
 gumbelx_RL = qevd_vector(x = gumbelx_v,p = 1-AEP,evd_mod_str = "fgumbelx",interval = c(0,20))
 
-plot_emperical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
+plot_empirical(x=poi_ts$annMax,xns = poi_ts$annMaxns)
 lines(empi_AEP,gumbel_RL)
 lines(empi_AEP,gev_RL,col=2)
 #lines(empi_AEP,gumbelx_RL,col="green")

@@ -94,14 +94,14 @@ centredAndScaled = function(nsloc = NULL){
   return(nsloc)
 }
 
-#' Turn Raster of Annual Maximums into Extreme Value Distributions Paramters for Netcdf Output
+#' Turn Raster of Annual Maximums into Extreme Value Distributions parameters for Netcdf Output
 #'
 #' @param r SpatRaster
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param nsloc A data frame with the same number of rows as the length of x, for linear modelling of the location parameter. The data frame is treated as a covariate matrix (excluding the intercept). A numeric vector can be given as an alternative to a single column data frame.
 #' @param outfile filename to write to netcdf
 #' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object. Ignored for functions that are implemented by terra in C++ (see under fun)
-#' @param ntrys integer number of attempts at fitting fgumbelx
+#' @param ntries integer number of attempts at fitting fgumbelx
 #' @param silent logical: should the report of error messages be suppressed?
 #'
 #' @return the parameters of the evd in a SpatRasterDataset
@@ -114,7 +114,7 @@ centredAndScaled = function(nsloc = NULL){
 #' ,package = "loopevd"))
 #' gumbel_r = raster_fevd(r,"fgumbel")
 #' plot(gumbel_r$loc,main = "location")
-raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,silent = FALSE){
+raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntries=1,silent = FALSE){
 
   set.seed(1)
   uvdata <- evd::rgev(100, loc = 0.13, scale = 1.1, shape = 0.2)
@@ -132,8 +132,8 @@ raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,s
     cl = parallel::makeCluster(cores)
     parallel::clusterExport(cl = cl,varlist = c("evd_mod_str","nsloc"),envir = environment())
   }
-  if( is.null(nsloc)) r_evd_params = terra::app(x=r,fun = evd_params, evd_mod_str = evd_mod_str,nsloc = NULL,empty_evd_params=empty_evd_params,cores=cl,ntrys=ntrys,returncs=FALSE,silent = FALSE)
-  if(!is.null(nsloc)) r_evd_params = terra::app(x=r,fun = evd_params, evd_mod_str = evd_mod_str,nsloc = nsloc,empty_evd_params=empty_evd_params,cores=cl,ntrys=ntrys,returncs=FALSE,silent = FALSE)
+  if( is.null(nsloc)) r_evd_params = terra::app(x=r,fun = evd_params, evd_mod_str = evd_mod_str,nsloc = NULL,empty_evd_params=empty_evd_params,cores=cl,ntries=ntries,returncs=FALSE,silent = FALSE)
+  if(!is.null(nsloc)) r_evd_params = terra::app(x=r,fun = evd_params, evd_mod_str = evd_mod_str,nsloc = nsloc,empty_evd_params=empty_evd_params,cores=cl,ntries=ntries,returncs=FALSE,silent = FALSE)
   if(cores > 1) parallel::stopCluster(cl)
 
   terra::crs(r_evd_params) = "+init=epsg:4326 +proj=longlat"
@@ -157,7 +157,7 @@ raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,s
 #' @param evd_mod_str either a string "fgumbel", "fgumbelx" or "fgev" from the extreme value distribution (evd) in the evd package
 #' @param nsloc A data frame with the same number of rows as the length of x, for linear modelling of the location parameter. The data frame is treated as a covariate matrix (excluding the intercept). A numeric vector can be given as an alternative to a single column data frame.
 #' @param empty_evd_params empty array
-#' @param ntrys number of trys to fit the evd
+#' @param ntries number of tries to fit the evd
 #' @param silent logical: should the report of error messages be suppressed?
 #' @param returncs logical: should the centered and scaled values be returned
 #' @importFrom stats sd AIC loess pnorm rnorm uniroot
@@ -168,7 +168,7 @@ raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntrys=1,s
 #' # Ten records of 20 random data generated from the fgumbel EVD
 #' am = lapply(1:10, function(x) evd::rgumbel(20))
 #' tab = as.data.frame(t(sapply(am,function(x) evd_params(x,"fgumbel"))))
-evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntrys = 3,silent = FALSE,returncs=TRUE){
+evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntries = 3,silent = FALSE,returncs=TRUE){
   #https://scientistcafe.com/ids/centering-and-scaling.html
   x = as.numeric(x)
   if(evd_mod_str == "fgumbel") {
@@ -204,7 +204,7 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntrys = 3,sile
             if(is.null(m[1])) try(m <- evd_mod(x = x, method = "BFGS"),silent = silent)
             if(is.null(m[1])) try(m <- evd_mod(x = x, method = "Nelder-Mead"),silent = silent)
             if(is.null(m[1])) try(m <- evd_mod(x = x, method = "CG"),silent = silent)
-          for(ri in 1:ntrys){
+          for(ri in 1:ntries){
             if(is.null(m[1])) try(m <- evd_mod(x = x, method = "SANN"),silent = silent)
           }
         }
@@ -238,7 +238,7 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntrys = 3,sile
         if(is.null(m[1])) try(m <- evd::fgumbelx(x, method = "BFGS",warn.inf=!silent),silent = silent)
         if(is.null(m[1])) try(m <- evd::fgumbelx(x, method = "Nelder-Mead",warn.inf=!silent),silent = silent)
         if(is.null(m[1])) try(m <- evd::fgumbelx(x, method = "CG",warn.inf=!silent),silent = silent)
-        for(ri in 1:ntrys){
+        for(ri in 1:ntries){
           if(is.null(m[1])) try(m <- evd::fgumbelx(x, method = "SANN",warn.inf=!silent),silent = silent)
         }
         if(is.null(m[1])) print("fgumbelx fit not found")
@@ -324,7 +324,7 @@ se_sig = function(muvari) {
 raster_se_sig = function(muvari) terra::app(muvari,se_sig)
 
 
-#' Plot the Emperical Return Level Data
+#' Plot the Empirical Return Level Data
 #'
 #' @param x A numeric vector, which may contain missing values.
 #' @param xns A numeric vector, corrected for the non-stationary change in location, which may contain missing values.
@@ -338,8 +338,8 @@ raster_se_sig = function(muvari) terra::app(muvari,se_sig)
 #' ns = seq(-1,1,,50)
 #' x = evd::rgev(50,loc=3)+ns
 #' xns = x-ns
-#' plot_emperical(x,xns)
-plot_emperical = function(x,xns=NULL,unitz = "-",...){
+#' plot_empirical(x,xns)
+plot_empirical = function(x,xns=NULL,unitz = "-",...){
   ndat = length(x)
   empi_AEP = -1/log((1:ndat)/(ndat + 1))
   #rng = range(x,xns,na.rm=TRUE)
@@ -417,7 +417,7 @@ annual_max = function(DF,record_attribute = "sea_level"){
 
 #' Return a Vector of EVD Quantiles
 #'
-#' @param x vector of EVD paramters
+#' @param x vector of EVD parameters
 #' @param p vector of probabilities.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
@@ -460,7 +460,7 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE,nams = 
 
 #' Return a raster of EVD Quantiles
 #'
-#' @param x SpatRasterDataset of EVD paramters, e.g. loc, scale, shape
+#' @param x SpatRasterDataset of EVD parameters, e.g. loc, scale, shape
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
@@ -485,7 +485,7 @@ raster_qevd = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
 
 #' Return a data.frame of EVD Quantiles
 #'
-#' @param x data.frame of EVD paramters, e.g. loc, scale, shape
+#' @param x data.frame of EVD parameters, e.g. loc, scale, shape
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.

@@ -9,7 +9,7 @@ evd_params(
   evd_mod_str,
   nsloc = NULL,
   empty_evd_params,
-  ntrys = 3,
+  ntries = 3,
   silent = FALSE,
   returncs = TRUE
 )
@@ -23,7 +23,7 @@ evd_params(
 
 \item{empty_evd_params}{empty array}
 
-\item{ntrys}{number of trys to fit the evd}
+\item{ntries}{number of tries to fit the evd}
 
 \item{silent}{logical: should the report of error messages be suppressed?}
 

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Julian O’Grady" />
 
-<meta name="date" content="2025-05-16" />
+<meta name="date" content="2025-05-19" />
 
 <title>Introduction to loopevd</title>
 
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Introduction to loopevd</h1>
 <h4 class="author">Julian O’Grady</h4>
-<h4 class="date">2025-05-16</h4>
+<h4 class="date">2025-05-19</h4>
 
 
 
@@ -370,7 +370,7 @@ many gridded locations.</p>
 <span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
 <span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a><span class="co">#&gt;     as.Date, as.Date.numeric</span></span></code></pre></div>
-<p>Colour palate for tempertrure a coast line of Australia for plotting
+<p>Colour palate for temperature a coast line of Australia for plotting
 can be defined by.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>cp <span class="ot">=</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">&quot;light yellow&quot;</span>,<span class="st">&quot;yellow&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;brown4&quot;</span>))</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>rwb <span class="ot">=</span> <span class="fu">colorRampPalette</span>(<span class="fu">c</span>(<span class="st">&quot;red&quot;</span>,<span class="st">&quot;white&quot;</span>,<span class="st">&quot;blue&quot;</span>))</span>
@@ -401,18 +401,19 @@ dataset is considered the empirical 20 year Average recurrence interval
 The evd package provides methods for fitting different extreme value
 distributions (EVDs) to data. It also including non-stationary fitting
 and significance tests. Below we use the loopevd function raster_fevd to
-fit Gumebel, Generlised Extreme Value (GEV) and mixed climate EVDs with
-the evd functions of fgumbel(), fgev and fgumbelx(). Note if parallel
-processes in possible with your install of terra, the raster_fevd can
-allocate the number of cores the terra::app function uses for
-analysis.</p>
+fit Gumbel, Generalised Extreme Value (GEV) and mixed climate EVDs with
+the <code>evd</code> functions of <code>fgumbel()</code>,
+<code>fgev</code> and <code>fgumbelx()</code>. Note if parallel
+processes in possible with your install of <code>terra</code>, the
+raster_fevd can allocate the number of cores the terra::app function
+uses for analysis.</p>
 <p>the <code>loopevd</code> function <code>raster_fevd()</code> function
 returns a spatRaster object with layers for each of the EVD paramters
 location(loc) scale shape and covariate matrix.</p>
 <p>Below the loopevd function gev_rl can then be used to generate the
 modelled 20 year ARI (5% AEP) fitted to all points from the gev_r
 object. Note there are differences between the the second highest
-emperical ARI (above) and the modelled ARI fitted to all data
+empirical ARI (above) and the modelled ARI fitted to all data
 (below).</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>gev_rl20 <span class="ot">=</span> <span class="fu">raster_qevd</span>(<span class="at">x =</span> gev_r,<span class="at">p =</span> <span class="dv">1</span><span class="fl">-.05</span>, <span class="at">evd_mod_str =</span> <span class="st">&quot;fgev&quot;</span>) <span class="co"># terra::app(x = gev_r,fun = qevd_vector,p = 1-.05, evd_mod_str = &quot;fgev&quot;)</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>at<span class="ot">=</span><span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>,<span class="fu">seq</span>(<span class="fl">27.5</span>,<span class="dv">50</span>,<span class="fl">2.5</span>),<span class="cn">Inf</span>)</span>
@@ -429,7 +430,7 @@ decade 2006–2015, human activity had warmed the world by 0.87°C
 (±0.12°C) compared to pre-industrial times (1850–1900). If the current
 warming rate continues, the world would reach human-induced global
 warming of 1.5°C around 2040”</p>
-<p>The <code>evd</code> pacakge allows the fitting of non-stationary
+<p>The <code>evd</code> package allows the fitting of non-stationary
 EVDs parameters (loc scale or shape) using a covariate such as the
 global temperature below.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>r_years <span class="ot">=</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(<span class="fu">time</span>(r),<span class="st">&quot;%Y&quot;</span>))</span>
@@ -460,14 +461,14 @@ global temperature below.</p>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#print(&quot;gridded non stationary gumbel fit:&quot;)</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">system.time</span>(gumbelns_r <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">raster_fevd</span>(r,<span class="st">&quot;fgumbel&quot;</span>,<span class="at">nsloc =</span> nsloc)))</span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;    2.00    0.00    7.59</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;    1.96    0.06    8.63</span></span>
 <span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
 <span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#print(&quot;gridded non stationary gev fit:&quot;)</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">system.time</span>(gevns_r <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">raster_fevd</span>(r,<span class="st">&quot;fgev&quot;</span>,<span class="at">nsloc =</span> nsloc,<span class="at">ntrys =</span> <span class="dv">3</span>)))</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">system.time</span>(gevns_r <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">raster_fevd</span>(r,<span class="st">&quot;fgev&quot;</span>,<span class="at">nsloc =</span> nsloc,<span class="at">ntries =</span> <span class="dv">3</span>)))</span>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Error in fgev.norm(x = x, start = start, ..., nsloc = nsloc, std.err = std.err,  : </span></span>
 <span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;   observed information matrix is singular; use std.err = FALSE</span></span>
 <span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;    4.09    0.04   12.09</span></span></code></pre></div>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;    3.15    0.03   14.35</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>AICs_r <span class="ot">=</span> <span class="fu">c</span>(gumbel_r<span class="sc">$</span>AIC,gev_r<span class="sc">$</span>AIC,gumbelns_r<span class="sc">$</span>AIC,gevns_r<span class="sc">$</span>AIC,gumbelx_r<span class="sc">$</span>AIC) </span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>best <span class="ot">=</span> <span class="fu">app</span>(AICs_r,which.min,<span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">plot</span>(best,<span class="at">col =</span> <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;grey&quot;</span>,<span class="st">&quot;yellow&quot;</span>,<span class="st">&quot;green&quot;</span>),<span class="at">plg=</span><span class="fu">list</span>(<span class="at">legend=</span><span class="fu">c</span>(<span class="st">&quot;gumbel&quot;</span>, <span class="st">&quot;gev&quot;</span>, <span class="st">&quot;gumbel_ns&quot;</span>,<span class="st">&quot;gev_ns&quot;</span>,<span class="st">&quot;gumbelx&quot;</span>)),<span class="at">main =</span> <span class="st">&quot;Which EVD is best (lowest AIC)&quot;</span>)</span>
@@ -558,7 +559,7 @@ global temperature below.</p>
 <span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>gevns_RL <span class="ot">=</span> <span class="fu">qevd_vector</span>(<span class="at">x =</span> gevns_v,<span class="at">p =</span> <span class="dv">1</span><span class="sc">-</span>AEP,<span class="at">evd_mod_str =</span> <span class="st">&quot;fgev&quot;</span>)</span>
 <span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>gumbelx_RL <span class="ot">=</span> <span class="fu">qevd_vector</span>(<span class="at">x =</span> gumbelx_v,<span class="at">p =</span> <span class="dv">1</span><span class="sc">-</span>AEP,<span class="at">evd_mod_str =</span> <span class="st">&quot;fgumbelx&quot;</span>,<span class="at">interval =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">20</span>))</span>
 <span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a></span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="fu">plot_emperical</span>(<span class="at">x=</span>poi_ts<span class="sc">$</span>annMax,<span class="at">xns =</span> poi_ts<span class="sc">$</span>annMaxns)</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="fu">plot_empirical</span>(<span class="at">x=</span>poi_ts<span class="sc">$</span>annMax,<span class="at">xns =</span> poi_ts<span class="sc">$</span>annMaxns)</span>
 <span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="fu">lines</span>(empi_AEP,gumbel_RL)</span>
 <span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="fu">lines</span>(empi_AEP,gev_RL,<span class="at">col=</span><span class="dv">2</span>)</span>
 <span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#lines(empi_AEP,gumbelx_RL,col=&quot;green&quot;)</span></span>

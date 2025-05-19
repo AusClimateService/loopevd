@@ -7,7 +7,7 @@
 qevd_vector(x, p, evd_mod_str, interval = NULL, lower.tail = TRUE, nams = NULL)
 }
 \arguments{
-\item{x}{vector of EVD paramters}
+\item{x}{vector of EVD parameters}
 
 \item{p}{vector of probabilities.}
 
