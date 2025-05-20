@@ -18,15 +18,15 @@ annual_max(DF, record_attribute = "sea_level")
 \value{
 A data.frame with one row per year (for years where at least one nonNA value is present), containing:
 \itemize{
-\item annMax ‒ the annual maximum
-\item annMean ‒ the annual mean (calendar year)
-\item datestr ‒ the date/time of the annual maximum, formatted "YYYYmmddHH"
-\item date ‒ the \code{POSIXt} timestamp of the annual maximum
-\item pc_complete ‒ the fraction (0 to 1) of hourly‐timestamped samples available in that year
+\item annMax - the annual maximum
+\item annMean - the annual mean (calendar year)
+\item datestr - the date/time of the annual maximum, formatted "YYYYmmddHH"
+\item date - the \code{POSIXt} timestamp of the annual maximum
+\item pc_complete - the fraction (0 to 1) of hourly-timestamped samples available in that year
 }
 }
 \description{
-annual_max() takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
+annual_max() takes a data frame of daily (or sub-daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of "on-the-hour" samples (data completeness) for each calendar year.
 }
 \details{
 For each year, only observations exactly on the hour (minute == 0 & second == 0) are counted toward completeness.  If no valid data exist for a year, that year is dropped from the output.

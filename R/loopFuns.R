@@ -17,7 +17,7 @@
 #' @param evd_mod_str A \code{character} string specifying which fitting function from \pkg{evd} to use: \code{"fgumbel"}, \code{"fgumbelx"} or \code{"fgev"}.
 #' @param nsloc Optional \code{matrix} of covariates for non-stationary location modelling. Must have the same number of rows as years retained after filtering.
 #' @param outfile Optional \code{character} path to a NetCDF file in which to write the results (not currently implemented).
-#' @param pc_complete Numeric scalar (0–1). Minimum completeness fraction for a year to be included. Defaults to \code{0.8}.
+#' @param pc_complete Numeric scalar (0-1). Minimum completeness fraction for a year to be included. Defaults to \code{0.8}.
 #' @param minyear Numeric. Minimum calendar year to include. Defaults to \code{1800}.
 #' @param maxyear Numeric. Maximum calendar year to include. Defaults to \code{2100}.
 #' @param mslAtt \code{character}. Name of the attribute to be removed from annMax in each data.frame (e.g.\ \code{"annMean"} or \code{"zero"}). Defaults to \code{"annMean"}.
@@ -260,20 +260,20 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntries = 3,sil
 #' Calculate One-Sided Confidence Level (%)
 #'
 #' @description
-#' Computes the one-sided confidence level, defined as (1 − p-value) × 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
+#' Computes the one-sided confidence level, defined as (1 - p-value) x 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
 #'
 #' @param muvari   Numeric array, of mean (location) values, variances corresponding to each `mu` to test against zero.
 #'
-#' @return A numeric vector of confidence levels (0–100%), each rounded to one decimal place.
+#' @return A numeric vector of confidence levels (0-100%), each rounded to one decimal place.
 #'
 #' @details
 #' For each element:
 #' 1. Calculate the standard error:
-#'    `se = sqrt(vari)`.
+#'    se = sqrt(vari).
 #' 2. Compute the absolute z-score:
-#'    `z = abs(mu / se)`.
-#' 3. The one-sided p-value is `1 − Φ(z)`, where Φ is the CDF of the standard normal.
-#' 4. The confidence level is `(1 − p-value) × 100 = Φ(z) × 100`.
+#'    z = abs(mu / se).
+#' 3. The one-sided p-value is 1 - phi(z), where phi is the CDF of the standard normal.
+#' 4. The confidence level is (1 - p-value) x 100 = phi(z) x 100.
 #'
 #' @examples
 #' # Single value
@@ -298,20 +298,20 @@ se_sig = function(muvari) {
 #' Calculate One-Sided Confidence Level (%)
 #'
 #' @description
-#' Computes the one-sided confidence level, defined as (1 − p-value) × 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
+#' Computes the one-sided confidence level, defined as (1 - p-value) x 100, for testing whether each mean (`mu`) differs from zero under a normal approximation.
 #'
-#' @param muvari   SpatRaster, of mean (location) values, variances corresponding to each `mu` to test against zero.
+#' @param muvari SpatRaster, of mean (location) values, variances corresponding to each `mu` to test against zero.
 #'
-#' @return A SpatRaster of confidence levels (0–100%), each rounded to one decimal place.
+#' @return A SpatRaster of confidence levels (0-100%), each rounded to one decimal place.
 #'
 #' @details
 #' For each element:
 #' 1. Calculate the standard error:
-#'    `se = sqrt(vari)`.
+#'    se = sqrt(vari).
 #' 2. Compute the absolute z-score:
-#'    `z = abs(mu / se)`.
-#' 3. The one-sided p-value is `1 − Φ(z)`, where Φ is the CDF of the standard normal.
-#' 4. The confidence level is `(1 − p-value) × 100 = Φ(z) × 100`.
+#'    z = abs(mu / se).
+#' 3. The one-sided p-value is 1 - phi(z), where phi is the CDF of the standard normal.
+#' 4. The confidence level is (1 - p-value) x 100 = phi(z) x 100.
 #'
 #' @examples
 #' require(terra)
@@ -351,7 +351,7 @@ plot_empirical = function(x,xns=NULL,unitz = "-",...){
 #' Compute Annual Maximum and Mean of on the Hour Records
 #'
 #' @description
-#' annual_max() takes a data frame of daily (or sub‐daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of “on‐the‐hour” samples (data completeness) for each calendar year.
+#' annual_max() takes a data frame of daily (or sub-daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of "on-the-hour" samples (data completeness) for each calendar year.
 #'
 #' @param DF A data.frame containing at least:
 #'   * date: a Date or POSIXt column of observation timestamps
@@ -359,11 +359,11 @@ plot_empirical = function(x,xns=NULL,unitz = "-",...){
 #' @param record_attribute A character string giving the name of the column in DF containing the values.  Defaults to "sea_level".
 #'
 #' @return A data.frame with one row per year (for years where at least one nonNA value is present), containing:
-#'   * annMax ‒ the annual maximum
-#'   * annMean ‒ the annual mean (calendar year)
-#'   * datestr ‒ the date/time of the annual maximum, formatted "YYYYmmddHH"
-#'   * date ‒ the `POSIXt` timestamp of the annual maximum
-#'   * pc_complete ‒ the fraction (0 to 1) of hourly‐timestamped samples available in that year
+#'   * annMax - the annual maximum
+#'   * annMean - the annual mean (calendar year)
+#'   * datestr - the date/time of the annual maximum, formatted "YYYYmmddHH"
+#'   * date - the `POSIXt` timestamp of the annual maximum
+#'   * pc_complete - the fraction (0 to 1) of hourly-timestamped samples available in that year
 #'
 #' @details
 #' For each year, only observations exactly on the hour (minute == 0 & second == 0) are counted toward completeness.  If no valid data exist for a year, that year is dropped from the output.
@@ -421,7 +421,7 @@ annual_max = function(DF,record_attribute = "sea_level"){
 #' @param p vector of probabilities.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
-#' @param lower.tail Logical; if TRUE (default), \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
+#' @param lower.tail Logical; if TRUE (default), P (X <= x), otherwise P (X > x).
 #' @param nams names of the values of x (optional)
 #' @return gives the quantile function corresponding to p
 #' @export
@@ -464,7 +464,7 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE,nams = 
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
-#' @param lower.tail Logical; if TRUE (default), probabilities are \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
+#' @param lower.tail Logical; if TRUE (default), probabilities are P (X <= x), otherwise P (X > x).
 #' @return gives the quantile function corresponding to p
 #' @export
 #'
@@ -489,7 +489,7 @@ raster_qevd = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
 #' @param p probability value.
 #' @param evd_mod_str either a string "fgumbel", "fgev" or "fgumbelx" from the extreme value distribution (evd) in the evd package
 #' @param interval A length two vector containing the end-points of the interval to be searched for the quantiles, passed to the uniroot function.
-#' @param lower.tail Logical; if TRUE (default), probabilities are \eqn{P (X \le x)}, otherwise \eqn{P (X \gt x)}.
+#' @param lower.tail Logical; if TRUE (default), probabilities are P (X <= x), otherwise P (X > x).
 #' @return gives the quantile function corresponding to p
 #' @export
 #'

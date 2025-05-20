@@ -33,7 +33,7 @@ If non-stationary fitting is required, each element may also include an \code{ns
 
 \item{outfile}{Optional \code{character} path to a NetCDF file in which to write the results (not currently implemented).}
 
-\item{pc_complete}{Numeric scalar (0–1). Minimum completeness fraction for a year to be included. Defaults to \code{0.8}.}
+\item{pc_complete}{Numeric scalar (0-1). Minimum completeness fraction for a year to be included. Defaults to \code{0.8}.}
 
 \item{minyear}{Numeric. Minimum calendar year to include. Defaults to \code{1800}.}
 

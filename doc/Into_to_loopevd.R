@@ -115,12 +115,12 @@ sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For 
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
 AEP_year = 1981
-gevns_RL5pc_1983 = raster_qevd(x = gev_r,p = 1-.05, evd_mod_str = "fgev") + nsloctab$year_cs[nsloctab$year==AEP_year]*gevns_r$locyear
+gevns_RL5pc_1981 = raster_qevd(x = gev_r,p = 1-.05, evd_mod_str = "fgev") + nsloctab$year_cs[nsloctab$year==AEP_year]*gevns_r$locyear
 AEP_year = 2019
 gevns_RL5pc_2019 = raster_qevd(x = gev_r,p = 1-.05, evd_mod_str = "fgev") + nsloctab$year_cs[nsloctab$year==AEP_year]*gevns_r$locyear
 
-plotit = c(gevns_RL5pc_1983,gevns_RL5pc_2019)
-names(plotit) = c("gevns_RL5pc_1983","gevns_RL5pc_2019")
+plotit = c(gevns_RL5pc_1981,gevns_RL5pc_2019)
+names(plotit) = c("gevns_RL5pc_1981","gevns_RL5pc_2019")
 at=c(-Inf,seq(27.5,50,2.5),Inf)
 cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
 #pdf("../plots/Empirical_20_year_ARI_daily_max_temp.pdf")
@@ -128,7 +128,7 @@ sp::spplot(plotit,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main=paste0("G
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
 at = c(-Inf,seq(-4,4,.5),Inf)
-sp::spplot(gevns_RL5pc_2019-gevns_RL5pc_1983,at=at,col.regions =c("#FFFFFF",rev(rwb(17)),"#000000"),main=paste0("Non-stationary change in 5% AEP GEV extremes 1983 to 2019"))
+sp::spplot(gevns_RL5pc_2019-gevns_RL5pc_1981,at=at,col.regions =c("#FFFFFF",rev(rwb(17)),"#000000"),main=paste0("Non-stationary change in 5% AEP GEV extremes 1981 to 2019"))
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
 poi = vect(rbind(c(142.91964371685395,-35.873803703002594)) ,"points")

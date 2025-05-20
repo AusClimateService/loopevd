@@ -10,20 +10,20 @@ raster_se_sig(muvari)
 \item{muvari}{SpatRaster, of mean (location) values, variances corresponding to each \code{mu} to test against zero.}
 }
 \value{
-A SpatRaster of confidence levels (0–100\%), each rounded to one decimal place.
+A SpatRaster of confidence levels (0-100\%), each rounded to one decimal place.
 }
 \description{
-Computes the one-sided confidence level, defined as (1 − p-value) × 100, for testing whether each mean (\code{mu}) differs from zero under a normal approximation.
+Computes the one-sided confidence level, defined as (1 - p-value) x 100, for testing whether each mean (\code{mu}) differs from zero under a normal approximation.
 }
 \details{
 For each element:
 \enumerate{
 \item Calculate the standard error:
-\code{se = sqrt(vari)}.
+se = sqrt(vari).
 \item Compute the absolute z-score:
-\code{z = abs(mu / se)}.
-\item The one-sided p-value is \verb{1 − Φ(z)}, where Φ is the CDF of the standard normal.
-\item The confidence level is \verb{(1 − p-value) × 100 = Φ(z) × 100}.
+z = abs(mu / se).
+\item The one-sided p-value is 1 - phi(z), where phi is the CDF of the standard normal.
+\item The confidence level is (1 - p-value) x 100 = phi(z) x 100.
 }
 }
 \examples{
