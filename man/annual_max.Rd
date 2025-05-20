@@ -2,26 +2,26 @@
 % Please edit documentation in R/loopFuns.R
 \name{annual_max}
 \alias{annual_max}
-\title{Compute Annual Maximum and Mean of on the Hour Records}
+\title{Compute Annual Maximum and Mean of On-the-Hour Records}
 \usage{
 annual_max(DF, record_attribute = "sea_level")
 }
 \arguments{
 \item{DF}{A data.frame containing at least:
 \itemize{
-\item date: a Date or POSIXt column of observation timestamps
+\item date: a Date or POSIXlt column of observation timestamps
 \item a numeric column of values
 }}
 
 \item{record_attribute}{A character string giving the name of the column in DF containing the values.  Defaults to "sea_level".}
 }
 \value{
-A data.frame with one row per year (for years where at least one nonNA value is present), containing:
+a data.frame containing a date column and a numeric column (specified in record_attribute) for years where at least one nonNA value is present, containing:
 \itemize{
 \item annMax - the annual maximum
 \item annMean - the annual mean (calendar year)
 \item datestr - the date/time of the annual maximum, formatted "YYYYmmddHH"
-\item date - the \code{POSIXt} timestamp of the annual maximum
+\item date - the POSIXlt timestamp of the annual maximum
 \item pc_complete - the fraction (0 to 1) of hourly-timestamped samples available in that year
 }
 }

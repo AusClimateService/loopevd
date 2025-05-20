@@ -12,6 +12,7 @@
 #'     \item \code{date}: POSIX timestamps for the maxima
 #'     \item \code{pc_complete}: completeness fraction per year
 #'     \item \code{zero}: the zero level
+#'     \item \code{nsloc}: optional covariate matrix used in non-stationary models.
 #'   }
 #'   If non-stationary fitting is required, each element may also include an \code{nsloc} matrix of covariates.
 #' @param evd_mod_str A \code{character} string specifying which fitting function from \pkg{evd} to use: \code{"fgumbel"}, \code{"fgumbelx"} or \code{"fgev"}.
@@ -29,9 +30,9 @@
 #' lst = lapply(1:10,function(x) loopevd::annual_max(data.frame(date = dates,
 #'                   sea_level = stats::rnorm(length(dates),mean=x/10,sd = x),
 #'                   zero = rep(0,length(dates)))))
-#' loopevd::list_evd(lst,"fgumbel",pc_complete=0)
+#' loopevd::list_fevd(lst,"fgumbel",pc_complete=0)
 #' @export
-list_evd = function(lst,evd_mod_str,nsloc=NULL,outfile=NULL,pc_complete=0.8,minyear=1800,maxyear=2100,mslAtt = "annMean"){
+list_fevd = function(lst,evd_mod_str,nsloc=NULL,outfile=NULL,pc_complete=0.8,minyear=1800,maxyear=2100,mslAtt = "annMean"){
   if(!is.null(lst[[1]]$nsloc[1])) {
     nsloc = "not empty"
   }
@@ -156,7 +157,7 @@ raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntries=1,
 #' @param x  numeric vector of data to be fitted.
 #' @param evd_mod_str either a string "fgumbel", "fgumbelx" or "fgev" from the extreme value distribution (evd) in the evd package
 #' @param nsloc A data frame with the same number of rows as the length of x, for linear modelling of the location parameter. The data frame is treated as a covariate matrix (excluding the intercept). A numeric vector can be given as an alternative to a single column data frame.
-#' @param empty_evd_params empty array
+#' @param empty_evd_params A preallocated vector or array used to store the return value when fitting fails
 #' @param ntries number of tries to fit the evd
 #' @param silent logical: should the report of error messages be suppressed?
 #' @param returncs logical: should the centered and scaled values be returned
@@ -348,21 +349,21 @@ plot_empirical = function(x,xns=NULL,unitz = "-",...){
   graphics::grid()
 }
 
-#' Compute Annual Maximum and Mean of on the Hour Records
+#' Compute Annual Maximum and Mean of On-the-Hour Records
 #'
 #' @description
 #' annual_max() takes a data frame of daily (or sub-daily) observations and returns a summary of the annual maximum and mean values, the date/time of each annual maximum, and the fraction of "on-the-hour" samples (data completeness) for each calendar year.
 #'
 #' @param DF A data.frame containing at least:
-#'   * date: a Date or POSIXt column of observation timestamps
+#'   * date: a Date or POSIXlt column of observation timestamps
 #'   * a numeric column of values
 #' @param record_attribute A character string giving the name of the column in DF containing the values.  Defaults to "sea_level".
 #'
-#' @return A data.frame with one row per year (for years where at least one nonNA value is present), containing:
+#' @return a data.frame containing a date column and a numeric column (specified in record_attribute) for years where at least one nonNA value is present, containing:
 #'   * annMax - the annual maximum
 #'   * annMean - the annual mean (calendar year)
 #'   * datestr - the date/time of the annual maximum, formatted "YYYYmmddHH"
-#'   * date - the `POSIXt` timestamp of the annual maximum
+#'   * date - the POSIXlt timestamp of the annual maximum
 #'   * pc_complete - the fraction (0 to 1) of hourly-timestamped samples available in that year
 #'
 #' @details

@@ -37,7 +37,7 @@ None. The function writes the data to a NetCDF file.
 }
 \description{
 This function converts a data frame to a NetCDF file for a list of points (rows are different stations).
-It tries to find CF-compliant variables like latitude, which may be \code{lat}.
+It attempts to identify CF-compliant coordinate variables, such as latitude and longitude, using default or specified column names.
 }
 \examples{
 # Example data frame

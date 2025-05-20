@@ -52,19 +52,21 @@ sp::spplot(gev_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="GEV 20
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
 r_years = as.numeric(format(time(r),"%Y"))
+
 #https://psl.noaa.gov/data/climateindices/list/
-dat = read.table("https://psl.noaa.gov/data/correlation/gmsst.data",skip=1,fill = TRUE,header = FALSE)
+#dat = read.table("https://psl.noaa.gov/data/correlation/gmsst.data",skip=1,fill = TRUE,header = FALSE)
 #dat = read.table("https://psl.noaa.gov/data/correlation/soi.data",skip=1,fill = TRUE,header = FALSE)
 #n = dim(dat)[1]
 #dat = cbind(dat[,1][-n],dat[,8:13][-n,],dat[,2:7][-1,]) 
-dat[dat == -99.99] = NA
-CI = suppressWarnings(data.frame(year = dat[,1],yearMean = apply(dat[,-1],MARGIN = 1,FUN = function(x) mean(as.numeric(x),na.rm=TRUE))))
+#dat[dat == -99.99] = NA
+#CI = suppressWarnings(data.frame(year = dat[,1],yearMean = apply(dat[,-1],MARGIN = 1,FUN = function(x) mean(as.numeric(x),na.rm=TRUE))))
 #https://www.ipcc.ch/sr15/faq/faq-chapter-1/ 
-CI = CI[CI$year >= min(r_years) & CI$year <= max(r_years) & !is.na(CI$year),]
-CI$yearMeanRoll = zoo::rollmean(CI$yearMean,20,fill=NA)
+#CI = CI[CI$year >= min(r_years) & CI$year <= max(r_years) & !is.na(CI$year),]
+#CI$yearMeanRoll = zoo::rollmean(CI$yearMean,20,fill=NA)
+#nsloc = data.frame(yearMean = CI$yearMean) #climate index
+
 nt = length(time(r))
-nsloc = data.frame(year = seq(-1,1,,nt)) #linear trend
-nsloc = data.frame(yearMean = CI$yearMean) #climate index
+nsloc = data.frame(year = seq(-1, 1, length.out = nt)) # linear trend
 
 nsloc  = centredAndScaled(data.frame(year = r_years))
 nsloctab = data.frame(year = r_years, year_cs = nsloc[,1])
@@ -90,26 +92,26 @@ lines(coastp)
 #writeRaster(best,paste0(datadir,"best_EVD.tif"))
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
-#find where gev shape is significant, defined as (1 − p-value) × 100
+#find where gev shape is significant, defined as (1 - p-value) × 100
 
 mle_sig = raster_se_sig(c(gevns_r$shape,gevns_r$cov_16))
 
 at = c(-Inf,seq(50,100,5))
 
 #where mle(par) +-1.95 se(par) is entirely on one side of zero"
-sp::spplot(mle_sig,at=at,col.regions =rev(rwb(20)),main = "Confidence Value For a non-stationary GEV shape parameter",
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(20)),main = "Confidence Value For a GEV shape parameter in a non-stationary EVD",
            sp.layout = coast.layer)
 
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
-#find where gev non-stationary location is significant, defined as (1 − p-value) × 100
+#find where gev non-stationary location is significant, defined as (1 - p-value) × 100
 
 mle_sig = raster_se_sig(c(gevns_r$locyear,gevns_r$cov_6))
 
 at = c(-Inf,seq(50,100,5))
 
 #where mle(par) +-1.95 se(par) is entirely on one side of zero"
-sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For a non-stationary  location parameter",
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For a non-stationary covariate location (locyear) parameter",
            sp.layout = coast.layer)
 
 

@@ -52,7 +52,7 @@ add_nc_atts = function(outfile,r,creator_name="",creator_email="",references="",
 #' Convert Data Frame to NetCDF
 #'
 #' This function converts a data frame to a NetCDF file for a list of points (rows are different stations).
-#' It tries to find CF-compliant variables like latitude, which may be `lat`.
+#' It attempts to identify CF-compliant coordinate variables, such as latitude and longitude, using default or specified column names.
 #'
 #' @param df A data frame containing the data to be converted.
 #' @param output_file The path to the output NetCDF file.

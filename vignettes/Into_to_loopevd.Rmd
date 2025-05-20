@@ -16,7 +16,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-Advances in spatial analysis of multidimensional [netCDF](https://en.wikipedia.org/wiki/NetCDF) datasets in R allows the improved processing as gridded climate datasets (e.g. temperature rainfall or wind speed) which include an extra dimension, such as time. This package reformat the output of the extreme value analysis functions in the [evd](https://cran.r-project.org/web/packages/evd/index.html) package for one location to be analysed with the function of the [terra](https://github.com/rspatial/terra) spatial package for many gridded locations. 
+This vignette introduces the `loopevd` package, which enables spatial application of extreme value analysis (EVA) functions—such as those from the `evd` package—across gridded datasets (e.g., NetCDF). These workflows are especially useful for analysing climate extremes such as annual maximum temperature or sea level across space and time.
+
+You’ll learn how to:
+- Load and visualise gridded extreme value data.
+- Compute gridded empirical recurrence intervals.
+- Fit Gumbel, GEV, and mixed-climate extreme value distributions to gridded data.
+- Generate spatial return level maps.
+- Optionally fit non-stationary models using climate covariates (e.g., time (years)).
+
+Advances in spatial analysis of multidimensional [netCDF](https://en.wikipedia.org/wiki/NetCDF) datasets in R allows the improved processing as gridded climate datasets (e.g. temperature rainfall or wind speed) which include an extra dimension, such as time. This package reformats the output of the extreme value analysis functions in the [evd](https://cran.r-project.org/web/packages/evd/index.html) package for one location to be analysed with the function of the [terra](https://github.com/rspatial/terra) spatial package for many gridded locations. 
 
 
 ```{r}
@@ -31,7 +40,7 @@ library(zoo)
 
 ```
 
-Colour palate for temperature a coast line of Australia for plotting can be defined by. 
+A colour palette for temperature and a coastline layer of Australia for plotting can be defined by. 
 
 ```{r}
 cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
@@ -52,14 +61,16 @@ r = terra::rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_19
 #r = terra::rast("../inst/extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc")
 ```
 
-Below a basic but rapid example of spatial gridded analysis using the `terra::app()` function rapidly loops through grid cells to apply the `base::sort()` function to extract the 2nd highest value of the 40 year dataset. The second highest value in a 40 year dataset is considered the empirical 20 year Average recurrence interval (ARI), having a 5% annual exceedence probability [(AEP)](https://tonyladson.wordpress.com/2017/07/04/converting-between-ey-aep-and-ari/). 
+Below is a simple and fast example of spatial gridded analysis using the `terra::app()` function rapidly loops through grid cells to apply the `base::sort()` function to extract the 2nd highest value of the 40 year dataset. TThe second-highest value in a 40-year dataset approximates the empirical 20-year average recurrence interval (ARI), having a 5% annual exceedence probability [(AEP)](https://tonyladson.wordpress.com/2017/07/04/converting-between-ey-aep-and-ari/). 
 
 ```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 secondHighest_r = app(r,function(x) sort(x, decreasing =TRUE)[2])
 at=c(-Inf,seq(27.5,50,2.5),Inf) #the Inf bookends add the hats/trinagles to the colour scale plot 
 sp::spplot(secondHighest_r,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="2nd highest value in 40 year dataset")
 ```
-The evd package provides methods for fitting different extreme value distributions (EVDs) to data. It also including non-stationary fitting and significance tests. Below we use the loopevd function raster_fevd to fit Gumbel, Generalised Extreme Value (GEV) and mixed climate EVDs with the `evd` functions of `fgumbel()`, `fgev` and `fgumbelx()`. Note if parallel processes in possible with your install of `terra`, the raster_fevd can allocate the number of cores the terra::app function uses for analysis.  
+Each pixel in the resulting raster now holds the second-highest annual maximum temperature across the 40-year period. This is a useful proxy for the 20-year return level assuming stationarity.
+
+The evd package provides methods for fitting different extreme value distributions (EVDs) to data. It also including non-stationary fitting and significance tests. Below we use the loopevd function raster_fevd to fit Gumbel, Generalised Extreme Value (GEV) and mixed climate EVDs with the `evd` functions of `fgumbel()`, `fgev()` and `fgumbelx()`. Note: if your installation of the terra package supports parallel processing, `raster_fevd()` can allocate multiple cores via `terra::app()`. 
 
 ```{r, include=FALSE}
 
@@ -70,9 +81,9 @@ system.time(gev_r <- raster_fevd(r,"fgev",silent=TRUE))
 system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntries = 3),silent=TRUE))
 gev_r
 ```
-the `loopevd` function `raster_fevd()` function returns a spatRaster object with layers for each of the EVD paramters location(loc) scale shape and covariate matrix. 
+the `loopevd` function `raster_fevd()` returns a spatRaster object with layers for each of the EVD parameters: location (loc), scale, shape, and any covariate terms.
 
-Below the loopevd function gev_rl can then be used to generate the modelled 20 year ARI (5% AEP) fitted to all points from the gev_r object. Note there are differences between the the second highest empirical ARI (above) and the modelled ARI fitted to all data (below).   
+Below the loopevd function gev_rl can then be used to generate the modelled 20 year ARI (5% AEP) fitted to all points from the gev_r object. Note there are differences between the second-highest empirical ARI (above) and the modelled ARI fitted to all data (below).   
 
 ```{r  out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 gev_rl20 = raster_qevd(x = gev_r,p = 1-.05, evd_mod_str = "fgev") # terra::app(x = gev_r,fun = qevd_vector,p = 1-.05, evd_mod_str = "fgev")
@@ -82,25 +93,27 @@ cp = colorRampPalette(c("light yellow","yellow","red","brown4"))
 sp::spplot(gev_rl20,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main="GEV 20 year ARI")
 ```
 
-Importantly, the above plots assume the climate is stationary and the AEP represent the period centered on the 40 years (1980 to 2019), where a AEP at the start of the 40 year period may not have the same probability at the end of the time period due to a change climate. Noting the [IPCC](https://www.ipcc.ch/sr15/faq/faq-chapter-1/) "By the decade 2006–2015, human activity had warmed the world by 0.87°C (±0.12°C) compared to pre-industrial times (1850–1900). If the current warming rate continues, the world would reach human-induced global warming of 1.5°C around 2040" 
+Importantly, the above plots assume the climate is stationary and the AEP represent the period centered on the 40 years (1980 to 2019), where an AEP at the start of the 40 year period may not have the same probability at the end of the time period due to a changing climate.
 
-The `evd` package allows the fitting of non-stationary EVDs parameters (loc scale or shape) using a covariate such as the global temperature below. 
+The `evd` package allows the fitting of non-stationary EVDs parameters (loc scale or shape) using a covariate such as a linear trend of time (years), shown below.
 
 ```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 r_years = as.numeric(format(time(r),"%Y"))
+
 #https://psl.noaa.gov/data/climateindices/list/
-dat = read.table("https://psl.noaa.gov/data/correlation/gmsst.data",skip=1,fill = TRUE,header = FALSE)
+#dat = read.table("https://psl.noaa.gov/data/correlation/gmsst.data",skip=1,fill = TRUE,header = FALSE)
 #dat = read.table("https://psl.noaa.gov/data/correlation/soi.data",skip=1,fill = TRUE,header = FALSE)
 #n = dim(dat)[1]
 #dat = cbind(dat[,1][-n],dat[,8:13][-n,],dat[,2:7][-1,]) 
-dat[dat == -99.99] = NA
-CI = suppressWarnings(data.frame(year = dat[,1],yearMean = apply(dat[,-1],MARGIN = 1,FUN = function(x) mean(as.numeric(x),na.rm=TRUE))))
+#dat[dat == -99.99] = NA
+#CI = suppressWarnings(data.frame(year = dat[,1],yearMean = apply(dat[,-1],MARGIN = 1,FUN = function(x) mean(as.numeric(x),na.rm=TRUE))))
 #https://www.ipcc.ch/sr15/faq/faq-chapter-1/ 
-CI = CI[CI$year >= min(r_years) & CI$year <= max(r_years) & !is.na(CI$year),]
-CI$yearMeanRoll = zoo::rollmean(CI$yearMean,20,fill=NA)
+#CI = CI[CI$year >= min(r_years) & CI$year <= max(r_years) & !is.na(CI$year),]
+#CI$yearMeanRoll = zoo::rollmean(CI$yearMean,20,fill=NA)
+#nsloc = data.frame(yearMean = CI$yearMean) #climate index
+
 nt = length(time(r))
-nsloc = data.frame(year = seq(-1,1,,nt)) #linear trend
-nsloc = data.frame(yearMean = CI$yearMean) #climate index
+nsloc = data.frame(year = seq(-1, 1, length.out = nt)) # linear trend
 
 nsloc  = centredAndScaled(data.frame(year = r_years))
 nsloctab = data.frame(year = r_years, year_cs = nsloc[,1])
@@ -136,7 +149,7 @@ mle_sig = raster_se_sig(c(gevns_r$shape,gevns_r$cov_16))
 at = c(-Inf,seq(50,100,5))
 
 #where mle(par) +-1.95 se(par) is entirely on one side of zero"
-sp::spplot(mle_sig,at=at,col.regions =rev(rwb(20)),main = "Confidence Value For a non-stationary GEV shape parameter",
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(20)),main = "Confidence Value For a GEV shape parameter in a non-stationary EVD",
            sp.layout = coast.layer)
 
 ```
@@ -148,7 +161,7 @@ mle_sig = raster_se_sig(c(gevns_r$locyear,gevns_r$cov_6))
 at = c(-Inf,seq(50,100,5))
 
 #where mle(par) +-1.95 se(par) is entirely on one side of zero"
-sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For a non-stationary  location parameter",
+sp::spplot(mle_sig,at=at,col.regions =rev(rwb(14)),main = "Confidence Value For a non-stationary covariate location (locyear) parameter",
            sp.layout = coast.layer)
 
 ```
@@ -249,5 +262,14 @@ lines(empi_AEP,gevns_RL,col="yellow")
 
 ```
 
+## Troubleshooting and Common Pitfalls
 
+- **Fitting fails at some pixels**: This can happen with short or noisy time series. Try reducing the model complexity or using more robust data filtering.
+- **Output NA values**: Check data completeness or whether a return level is outside the support of the fitted distribution.
+- **Parallel cores not being used**: Make sure your R session supports parallel processing and that `terra::app()` is not silently defaulting to single-core.
+
+## What Next?
+
+- Explore the package reference: `help(package = "loopevd")`
+- Try fitting with other covariates like ENSO or SAM that are commented out in the above code.
 

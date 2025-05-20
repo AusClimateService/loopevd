@@ -21,7 +21,7 @@ evd_params(
 
 \item{nsloc}{A data frame with the same number of rows as the length of x, for linear modelling of the location parameter. The data frame is treated as a covariate matrix (excluding the intercept). A numeric vector can be given as an alternative to a single column data frame.}
 
-\item{empty_evd_params}{empty array}
+\item{empty_evd_params}{A preallocated vector or array used to store the return value when fitting fails}
 
 \item{ntries}{number of tries to fit the evd}
 
