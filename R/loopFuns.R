@@ -113,7 +113,8 @@ centredAndScaled = function(nsloc = NULL){
 #' require(terra)
 #' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc"
 #' ,package = "loopevd"))
-#' gumbel_r = raster_fevd(r,"fgumbel")
+#' r2 = aggregate(r,4) #lower the resolution for a fast example
+#' gumbel_r = raster_fevd(r2,"fgumbel")
 #' plot(gumbel_r$loc,main = "location")
 raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntries=1,silent = FALSE){
 
@@ -476,7 +477,8 @@ qevd_vector = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE,nams = 
 #' require(terra)
 #' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc",
 #'                      package = "loopevd"))
-#' gumbel_r = raster_fevd(r,"fgumbel")
+#' r2 = aggregate(r,4) #lower the resolution for a fast example
+#' gumbel_r = raster_fevd(r2,"fgumbel")
 #' AEP_10pc = raster_qevd(gumbel_r,1-0.1,"fgumbel") # 10% Annual Exceedance Probability.
 raster_qevd = function(x,p,evd_mod_str,interval = NULL,lower.tail = TRUE){
   if(class(x) != class(sds(rast()))) stop("x must be of the class SpatRasterDataset")

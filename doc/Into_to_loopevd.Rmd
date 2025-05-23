@@ -61,7 +61,7 @@ r = terra::rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_19
 #r = terra::rast("../inst/extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc")
 ```
 
-Below is a simple and fast example of spatial gridded analysis using the `terra::app()` function rapidly loops through grid cells to apply the `base::sort()` function to extract the 2nd highest value of the 40 year dataset. TThe second-highest value in a 40-year dataset approximates the empirical 20-year average recurrence interval (ARI), having a 5% annual exceedence probability [(AEP)](https://tonyladson.wordpress.com/2017/07/04/converting-between-ey-aep-and-ari/). 
+Below is a simple and fast example of spatial gridded analysis using the `terra::app()` function rapidly loops through grid cells to apply the `base::sort()` function to extract the 2nd highest value of the 40 year dataset. The second-highest value in a 40-year dataset approximates the empirical 20-year average recurrence interval (ARI), having a 5% annual exceedance probability [(AEP)](https://tonyladson.wordpress.com/2017/07/04/converting-between-ey-aep-and-ari/). 
 
 ```{r, out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"}
 secondHighest_r = app(r,function(x) sort(x, decreasing =TRUE)[2])

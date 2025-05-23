@@ -27,7 +27,8 @@ Return a raster of EVD Quantiles
 require(terra)
 r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc",
                      package = "loopevd"))
-gumbel_r = raster_fevd(r,"fgumbel")
+r2 = aggregate(r,4) #lower the resolution for a fast example
+gumbel_r = raster_fevd(r2,"fgumbel")
 AEP_10pc = raster_qevd(gumbel_r,1-0.1,"fgumbel") # 10\% Annual Exceedance Probability.
 }
 \seealso{
