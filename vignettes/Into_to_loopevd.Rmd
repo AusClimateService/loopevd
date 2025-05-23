@@ -25,7 +25,7 @@ You’ll learn how to:
 - Generate spatial return level maps.
 - Optionally fit non-stationary models using climate covariates (e.g., time (years)).
 
-Advances in spatial analysis of multidimensional [netCDF](https://en.wikipedia.org/wiki/NetCDF) datasets in R allows the improved processing as gridded climate datasets (e.g. temperature rainfall or wind speed) which include an extra dimension, such as time. This package reformats the output of the extreme value analysis functions in the [evd](https://cran.r-project.org/web/packages/evd/index.html) package for one location to be analysed with the function of the [terra](https://github.com/rspatial/terra) spatial package for many gridded locations. 
+Advances in spatial analysis of multidimensional [netCDF](https://en.wikipedia.org/wiki/NetCDF) datasets in R allows the improved processing as gridded climate datasets (e.g. temperature rainfall or wind speed) which include an extra dimension, such as time. This package reformats the output of the extreme value analysis functions in the [evd](https://CRAN.R-project.org/package=evd) package for one location to be analysed with the function of the [terra](https://github.com/rspatial/terra) spatial package for many gridded locations. 
 
 
 ```{r}

@@ -359,8 +359,8 @@ climate covariates (e.g., time (years)).</p>
 allows the improved processing as gridded climate datasets
 (e.g. temperature rainfall or wind speed) which include an extra
 dimension, such as time. This package reformats the output of the
-extreme value analysis functions in the <a href="https://cran.r-project.org/web/packages/evd/index.html">evd</a>
-package for one location to be analysed with the function of the <a href="https://github.com/rspatial/terra">terra</a> spatial package for
+extreme value analysis functions in the <a href="https://CRAN.R-project.org/package=evd">evd</a> package for one
+location to be analysed with the function of the <a href="https://github.com/rspatial/terra">terra</a> spatial package for
 many gridded locations.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(loopevd)</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ncdf4)      </span>
@@ -471,14 +471,14 @@ trend of time (years), shown below.</p>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#print(&quot;gridded non stationary gumbel fit:&quot;)</span></span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">system.time</span>(gumbelns_r <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">raster_fevd</span>(r,<span class="st">&quot;fgumbel&quot;</span>,<span class="at">nsloc =</span> nsloc)))</span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;    1.78    0.03    7.35</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;    2.51    0.01    8.08</span></span>
 <span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
 <span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#print(&quot;gridded non stationary gev fit:&quot;)</span></span>
 <span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="fu">system.time</span>(gevns_r <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">raster_fevd</span>(r,<span class="st">&quot;fgev&quot;</span>,<span class="at">nsloc =</span> nsloc,<span class="at">ntries =</span> <span class="dv">3</span>)))</span>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Error in fgev.norm(x = x, start = start, ..., nsloc = nsloc, std.err = std.err,  : </span></span>
 <span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;   observed information matrix is singular; use std.err = FALSE</span></span>
 <span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;    user  system elapsed </span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;    2.91    0.00   11.55</span></span></code></pre></div>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;    5.41    0.00   12.70</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>AICs_r <span class="ot">=</span> <span class="fu">c</span>(gumbel_r<span class="sc">$</span>AIC,gev_r<span class="sc">$</span>AIC,gumbelns_r<span class="sc">$</span>AIC,gevns_r<span class="sc">$</span>AIC,gumbelx_r<span class="sc">$</span>AIC) </span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>best <span class="ot">=</span> <span class="fu">app</span>(AICs_r,which.min,<span class="at">na.rm=</span><span class="cn">TRUE</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">plot</span>(best,<span class="at">col =</span> <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>,<span class="st">&quot;red&quot;</span>,<span class="st">&quot;grey&quot;</span>,<span class="st">&quot;yellow&quot;</span>,<span class="st">&quot;green&quot;</span>),<span class="at">plg=</span><span class="fu">list</span>(<span class="at">legend=</span><span class="fu">c</span>(<span class="st">&quot;gumbel&quot;</span>, <span class="st">&quot;gev&quot;</span>, <span class="st">&quot;gumbel_ns&quot;</span>,<span class="st">&quot;gev_ns&quot;</span>,<span class="st">&quot;gumbelx&quot;</span>)),<span class="at">main =</span> <span class="st">&quot;Which EVD is best (lowest AIC)&quot;</span>)</span>
