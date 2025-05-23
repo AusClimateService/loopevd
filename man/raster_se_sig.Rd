@@ -30,6 +30,7 @@ z = abs(mu / se).
 require(terra)
 r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc",
                      package = "loopevd"))
-gev_r = raster_fevd(r,"fgev")
+r2 = aggregate(r,4) #lower the resolution for a fast example
+gev_r = raster_fevd(r2,"fgev")
 raster_se_sig(c(gev_r$shape,gev_r$cov_9))
 }

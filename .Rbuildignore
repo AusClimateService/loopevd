@@ -1,5 +1,7 @@
+^\.github$
 ^loopevd\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^doc$
 ^Meta$
+^NOTE$
