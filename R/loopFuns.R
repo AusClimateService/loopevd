@@ -104,6 +104,7 @@ centredAndScaled = function(nsloc = NULL){
 #' @param cores positive integer. If cores > 1, a 'parallel' package cluster with that many cores is created and used. You can also supply a cluster object. Ignored for functions that are implemented by terra in C++ (see under fun)
 #' @param ntries integer number of attempts at fitting fgumbelx
 #' @param silent logical: should the report of error messages be suppressed?
+#' @param seed set the seed for fitting.
 #'
 #' @return the parameters of the evd in a SpatRasterDataset
 #' @export
@@ -114,11 +115,14 @@ centredAndScaled = function(nsloc = NULL){
 #' r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc"
 #' ,package = "loopevd"))
 #' r2 = aggregate(r,4) #lower the resolution for a fast example
-#' gumbel_r = raster_fevd(r2,"fgumbel")
+#' gumbel_r = raster_fevd(r2,"fgumbel",seed = 1)
 #' plot(gumbel_r$loc,main = "location")
-raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntries=1,silent = FALSE){
+raster_fevd = function(r,evd_mod_str,nsloc=NULL,outfile=NULL,cores = 1,ntries=1,silent = FALSE,seed=NULL){
 
-  set.seed(1)
+  if(!is.null(seed)){
+    set.seed(seed)
+  }
+
   uvdata <- evd::rgev(100, loc = 0.13, scale = 1.1, shape = 0.2)
 
   if( is.null(nsloc)) empty_evd_params = evd_params(uvdata,evd_mod_str)*NA
@@ -243,7 +247,7 @@ evd_params = function(x,evd_mod_str,nsloc = NULL,empty_evd_params,ntries = 3,sil
         for(ri in 1:ntries){
           if(is.null(m[1])) try(m <- evd::fgumbelx(x, method = "SANN",warn.inf=!silent),silent = silent)
         }
-        if(is.null(m[1])) print("fgumbelx fit not found")
+        if(is.null(m[1])) message("fgumbelx fit not found")
         if(!is.null(m[1])){
           out = c(m$estimate, m$var.cov, AIC(m))
           names(out) = c(names(m$estimate),paste0("cov_",1:length(m$var.cov)),"AIC")

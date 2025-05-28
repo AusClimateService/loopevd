@@ -11,7 +11,8 @@ raster_fevd(
   outfile = NULL,
   cores = 1,
   ntries = 1,
-  silent = FALSE
+  silent = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ raster_fevd(
 \item{ntries}{integer number of attempts at fitting fgumbelx}
 
 \item{silent}{logical: should the report of error messages be suppressed?}
+
+\item{seed}{set the seed for fitting.}
 }
 \value{
 the parameters of the evd in a SpatRasterDataset
@@ -40,7 +43,7 @@ require(terra)
 r = rast(system.file("extdata/50km_AnnMax_agcd_v1_tmax_mean_r005_daily_1980-2019.nc"
 ,package = "loopevd"))
 r2 = aggregate(r,4) #lower the resolution for a fast example
-gumbel_r = raster_fevd(r2,"fgumbel")
+gumbel_r = raster_fevd(r2,"fgumbel",seed = 1)
 plot(gumbel_r$loc,main = "location")
 }
 \seealso{

@@ -36,11 +36,11 @@ sp::spplot(secondHighest_r,at=at,col.regions =c("#FFFFFF",cp(9),"#000000"),main=
 
 ## ----include=FALSE------------------------------------------------------------
 
-system.time(gumbel_r <- raster_fevd(r,"fgumbel",silent=TRUE))
+system.time(gumbel_r <- raster_fevd(r,"fgumbel",silent=TRUE,seed=1))
 
-system.time(gev_r <- raster_fevd(r,"fgev",silent=TRUE))
+system.time(gev_r <- raster_fevd(r,"fgev",silent=TRUE,seed=1))
 
-system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntries = 3),silent=TRUE))
+system.time(try(gumbelx_r <- raster_fevd(r,"fgumbelx",silent=TRUE,ntries = 3,seed=1),silent=TRUE))
 gev_r
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
@@ -78,10 +78,10 @@ abline(v = zero_year)
 grid()
 
 #print("gridded non stationary gumbel fit:")
-system.time(gumbelns_r <- suppressWarnings(raster_fevd(r,"fgumbel",nsloc = nsloc)))
+system.time(gumbelns_r <- suppressWarnings(raster_fevd(r,"fgumbel",nsloc = nsloc,seed=1)))
 
 #print("gridded non stationary gev fit:")
-system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntries = 3)))
+system.time(gevns_r <- suppressWarnings(raster_fevd(r,"fgev",nsloc = nsloc,ntries = 3,seed=1)))
 
 
 ## ----out.width = '80%',fig.height=4,fig.width=6, fig.align = "center"---------
